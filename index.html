@@ -1,391 +1,304 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NexSync · Centro de Control Autónomo</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-<style>
-  :root{
-    --bg:#070b12; --panel:#0d1420; --panel-2:#111b2b; --line:#1c2a3e;
-    --ink:#e8eef7; --muted:#7e90ab; --cyan:#28e0c8; --amber:#ffb340; --red:#ff4d5e;
-    --green:#3ddc84; --violet:#7c83ff;
-  }
-  *{font-family:'Sora',sans-serif;}
-  .mono{font-family:'JetBrains Mono',monospace;}
-  body{background:var(--bg);color:var(--ink);overflow-x:hidden;}
-  .grid-bg{
-    background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
-    background-size:44px 44px; opacity:.18;
-  }
-  .glow-cyan{box-shadow:0 0 0 1px rgba(40,224,200,.25),0 0 30px -8px rgba(40,224,200,.4);}
-  .card{background:linear-gradient(160deg,var(--panel-2),var(--panel));border:1px solid var(--line);}
-  .card:hover{border-color:rgba(40,224,200,.4);transform:translateY(-2px);transition:.25s;}
-  .pulse-dot{animation:pulse 1.4s infinite;}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,77,94,.6)}70%{box-shadow:0 0 0 12px rgba(255,77,94,0)}100%{box-shadow:0 0 0 0 rgba(255,77,94,0)}}
-  .blink{animation:blink 1s step-end infinite;}
-  @keyframes blink{50%{opacity:0}}
-  .scan{position:relative;overflow:hidden;}
-  .scan::after{content:'';position:absolute;inset:0;background:linear-gradient(transparent,rgba(40,224,200,.08),transparent);transform:translateY(-100%);animation:scan 4s linear infinite;}
-  @keyframes scan{to{transform:translateY(100%)}}
-  .log-enter{animation:logIn .5s ease both;}
-  @keyframes logIn{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:none}}
-  .marquee{animation:marquee 22s linear infinite;}
-  @keyframes marquee{to{transform:translateX(-50%)}}
-  .bar-fill{transition:width 1s cubic-bezier(.4,0,.2,1);}
-  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:var(--line);border-radius:9px}
-  .ring{transform:rotate(-90deg);transform-origin:center}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NexSync | Resiliencia Operativa</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: white;
+    }
+
+    header {
+      padding: 24px;
+      background: #111827;
+      border-bottom: 1px solid #334155;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    .subtitle {
+      color: #cbd5e1;
+      margin-top: 8px;
+    }
+
+    main {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+    }
+
+    .card h2 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #93c5fd;
+    }
+
+    .item {
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+      border: 1px solid #334155;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      background: #2563eb;
+      color: white;
+      margin-top: 6px;
+    }
+
+    .danger {
+      background: #dc2626;
+    }
+
+    .success {
+      background: #16a34a;
+    }
+
+    .warning {
+      background: #ca8a04;
+    }
+
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin: 6px 0 12px;
+      border-radius: 8px;
+      border: 1px solid #475569;
+      background: #020617;
+      color: white;
+    }
+
+    .full {
+      grid-column: 1 / -1;
+    }
+  </style>
 </head>
-<body class="min-h-screen">
-<div class="fixed inset-0 grid-bg pointer-events-none"></div>
-<div class="fixed inset-0 pointer-events-none" style="background:radial-gradient(900px 500px at 80% -10%,rgba(40,224,200,.10),transparent),radial-gradient(700px 400px at 0% 100%,rgba(124,131,255,.10),transparent)"></div>
 
-<div class="relative max-w-[1500px] mx-auto px-5 py-5">
-
-  <!-- HEADER -->
-  <header class="flex items-center justify-between flex-wrap gap-4 mb-5">
-    <div class="flex items-center gap-3">
-      <div class="w-11 h-11 rounded-xl glow-cyan flex items-center justify-center" style="background:linear-gradient(135deg,#0e1b2b,#0a1018)">
-        <i class="fa-solid fa-hexagon-nodes text-2xl" style="color:var(--cyan)"></i>
-      </div>
-      <div>
-        <h1 class="text-xl font-extrabold tracking-tight">Nex<span style="color:var(--cyan)">Sync</span> <span class="text-[10px] mono px-2 py-0.5 rounded bg-white/5 align-middle" style="color:var(--muted)">v2.6</span></h1>
-        <p class="text-xs" style="color:var(--muted)">Ingenio Azucarero Guabirá · Parque Industrial · Santa Cruz</p>
-      </div>
-    </div>
-    <div class="flex items-center gap-3 text-xs">
-      <span id="dbState" class="flex items-center gap-2 px-3 py-2 rounded-lg card mono"><span class="w-2 h-2 rounded-full pulse-dot" style="background:var(--amber)"></span> CONECTANDO…</span>
-      <span class="px-3 py-2 rounded-lg card mono" id="clock" style="color:var(--cyan)">--:--:--</span>
-      <span class="w-9 h-9 rounded-lg card flex items-center justify-center"><i class="fa-solid fa-user-tie" style="color:var(--muted)"></i></span>
-    </div>
+<body>
+  <header>
+    <h1>NexSync</h1>
+    <p class="subtitle">
+      Plataforma multiagente para resiliencia operativa ante crisis locales en Santa Cruz.
+    </p>
   </header>
 
-  <!-- ALERT MARQUEE -->
-  <div class="rounded-xl mb-5 overflow-hidden border" style="border-color:rgba(255,77,94,.45);background:linear-gradient(90deg,rgba(255,77,94,.16),rgba(255,179,64,.10))">
-    <div class="flex items-center gap-3 px-4 py-2.5">
-      <span class="flex items-center gap-2 shrink-0 font-bold text-sm" style="color:var(--red)"><i class="fa-solid fa-triangle-exclamation pulse-dot rounded-full"></i> CRISIS EN VIVO</span>
-      <div class="overflow-hidden flex-1">
-        <div class="marquee whitespace-nowrap mono text-sm flex gap-12" style="color:#ffd0c2">
-          <span id="mq1"></span><span id="mq2"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-
-    <!-- LEFT: RESOURCES -->
-    <section class="lg:col-span-1 space-y-4">
-      <h2 class="text-xs font-bold tracking-[.2em] mb-1" style="color:var(--muted)">RECURSOS PROPIOS</h2>
-      <div id="resources" class="space-y-3"></div>
-
-      <div class="card rounded-xl p-4 mt-4">
-        <div class="flex items-center justify-between mb-3">
-          <span class="text-xs font-bold tracking-widest" style="color:var(--muted)">SALUD OPERATIVA</span>
-          <span class="mono text-lg font-bold" style="color:var(--cyan)" id="healthPct">78%</span>
-        </div>
-        <div class="flex items-center justify-center">
-          <svg width="120" height="120" class="ring">
-            <circle cx="60" cy="60" r="50" stroke="#1c2a3e" stroke-width="10" fill="none"/>
-            <circle id="healthRing" cx="60" cy="60" r="50" stroke="var(--cyan)" stroke-width="10" fill="none" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="69" style="transition:1s"/>
-          </svg>
-        </div>
-        <p class="text-center text-xs mt-2" style="color:var(--muted)">Estabilizada por negociaciones autónomas</p>
-      </div>
+  <main>
+    <section class="card">
+      <h2>Empresas</h2>
+      <div id="companiesList">Cargando empresas...</div>
     </section>
 
-    <!-- CENTER: MULTI-AGENT MONITOR -->
-    <section class="lg:col-span-2 card rounded-xl scan overflow-hidden">
-      <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color:var(--line)">
-        <div class="flex items-center gap-2">
-          <i class="fa-solid fa-robot" style="color:var(--violet)"></i>
-          <span class="font-bold text-sm">Monitor del Sistema Multiagente</span>
-          <span class="mono text-[10px] px-2 py-0.5 rounded blink" style="background:rgba(61,220,132,.15);color:var(--green)">● LIVE</span>
-        </div>
-        <div class="flex gap-2">
-          <button id="btnCrisis" class="text-xs px-3 py-1.5 rounded-lg font-semibold transition hover:brightness-125" style="background:rgba(124,131,255,.18);color:var(--violet)"><i class="fa-solid fa-bolt"></i> Simular Crisis</button>
-          <button id="btnClear" class="text-xs px-3 py-1.5 rounded-lg card" style="color:var(--muted)"><i class="fa-solid fa-broom"></i></button>
-        </div>
-      </div>
-
-      <div class="px-5 py-3 grid grid-cols-3 gap-3 border-b" style="border-color:var(--line)">
-        <div class="text-center"><p class="mono text-2xl font-bold" style="color:var(--cyan)" id="kpiNeg">0</p><p class="text-[10px]" style="color:var(--muted)">NEGOCIACIONES HOY</p></div>
-        <div class="text-center"><p class="mono text-2xl font-bold" style="color:var(--green)" id="kpiSaved">$ 0</p><p class="text-[10px]" style="color:var(--muted)">AHORRO GENERADO</p></div>
-        <div class="text-center"><p class="mono text-2xl font-bold" style="color:var(--amber)" id="kpiAgents">7</p><p class="text-[10px]" style="color:var(--muted)">AGENTES CONECTADOS</p></div>
-      </div>
-
-      <div id="logbox" class="px-5 py-4 h-[360px] overflow-y-auto space-y-2 mono text-sm"></div>
-
-      <div class="px-5 py-3 border-t flex items-center gap-2 mono text-xs" style="border-color:var(--line);color:var(--muted)">
-        <span style="color:var(--green)">guabira@nexsync:~$</span>
-        <span>monitoreando red de agentes</span><span class="blink">▌</span>
-      </div>
+    <section class="card">
+      <h2>Recursos críticos</h2>
+      <div id="resourcesList">Cargando recursos...</div>
     </section>
-  </div>
 
-  <!-- BOTTOM: ACTIVE TRANSACTIONS -->
-  <section class="mt-5">
-    <h2 class="text-xs font-bold tracking-[.2em] mb-3" style="color:var(--muted)">TRANSACCIONES ENTRE EMPRESAS</h2>
-    <div id="deals" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
-  </section>
+    <section class="card">
+      <h2>Eventos de crisis</h2>
+      <div id="crisisList">Cargando crisis...</div>
+    </section>
 
-  <footer class="text-center text-xs mt-8 mono" style="color:var(--muted)">NexSync · GDG Hackathon Santa Cruz de la Sierra · Negociación autónoma encriptada entre agentes industriales</footer>
-</div>
+    <section class="card">
+      <h2>Alertas</h2>
+      <div id="alertsList">Cargando alertas...</div>
+    </section>
 
-<!-- ============================================================
-     FIREBASE SDK v10 (modular, vía CDN) + LÓGICA DEL DASHBOARD
-     Debe ser type="module" para poder usar import.
-============================================================ -->
-<script type="module">
-/* ---------- 1) IMPORTS FIREBASE v10 ---------- */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, collection, query, orderBy, limit,
-  onSnapshot, addDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    <section class="card full">
+      <h2>Simular negociación de recurso</h2>
 
-/* ---------- 2) CONFIGURACIÓN FIREBASE ----------
-   👉 PEGUEN AQUÍ las credenciales de su proyecto
-   (Firebase Console → Configuración del proyecto → Tus apps → SDK Web).
-   Mientras estén vacías, el dashboard corre en MODO DEMO local. */
-const firebaseConfig = {
-  apiKey:            "",
-  authDomain:        "",   // ej: nexsync-xxxx.firebaseapp.com
-  projectId:         "",   // ej: nexsync-xxxx
-  storageBucket:     "",   // ej: nexsync-xxxx.appspot.com
-  messagingSenderId: "",
-  appId:             ""
-};
+      <label>Empresa solicitante</label>
+      <input id="buyerCompanyId" value="empresa_demo_1" />
 
-/* Detecta si ya pegaron credenciales reales */
-const FIREBASE_LISTO = firebaseConfig.projectId && firebaseConfig.apiKey;
+      <label>Recurso solicitado</label>
+      <input id="resourceId" value="diesel_demo_1" />
 
-let db = null;
-let alertasRef = null, transaccionesRef = null;
+      <label>Oferta</label>
+      <input id="offer" type="text" value="Pago de emergencia por uso del recurso solicitado" />
 
-if (FIREBASE_LISTO) {
-  const app = initializeApp(firebaseConfig);
-  db = getFirestore(app);
-  alertasRef       = collection(db, "alertas_crisis");
-  transaccionesRef = collection(db, "transacciones_agentes");
-  setDbState(true);
-} else {
-  setDbState(false);
-  console.warn("[NexSync] firebaseConfig vacío → corriendo en MODO DEMO local. Pega tus credenciales para activar Firestore.");
-}
+      <button onclick="createNegotiation()">Crear negociación</button>
 
-function setDbState(online){
-  const el = document.getElementById('dbState');
-  if (online){
-    el.innerHTML = '<span class="w-2 h-2 rounded-full pulse-dot" style="background:var(--green)"></span> FIRESTORE EN VIVO';
-  } else {
-    el.innerHTML = '<span class="w-2 h-2 rounded-full pulse-dot" style="background:var(--amber)"></span> MODO DEMO (sin Firestore)';
-  }
-}
+      <div id="negotiationResult"></div>
+    </section>
 
-/* ---------- CLOCK ---------- */
-setInterval(()=>{document.getElementById('clock').textContent=new Date().toLocaleTimeString('es-BO');},1000);
+    <section class="card full">
+      <h2>Negociaciones</h2>
+      <div id="negotiationsList">Cargando negociaciones...</div>
+    </section>
+  </main>
 
-/* ---------- MARQUEE ALERTS (texto rotativo de fondo) ---------- */
-const alertsMarquee=[
- 'ALERTA: Bloqueo de rutas en Montero — logística comprometida',
- 'DÉFICIT de Diésel reportado en Parque Industrial',
- 'Lluvias intensas: acceso a silos norte restringido',
- 'Sube precio del combustible industrial +14%',
- 'Paro de transporte pesado anunciado en Warnes'
-];
-const mqText=alertsMarquee.map(a=>'⚠ '+a).join('     •     ')+'     •     ';
-document.getElementById('mq1').textContent=mqText;
-document.getElementById('mq2').textContent=mqText;
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      addDoc,
+      serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-/* ---------- RESOURCES (recursos propios — locales) ---------- */
-const resources=[
- {n:'Agua Industrial',i:'fa-droplet',c:'#28e0c8',v:64,u:'m³ x10³'},
- {n:'Energía',i:'fa-bolt',c:'#ffb340',v:81,u:'MWh'},
- {n:'Capacidad en Silos',i:'fa-warehouse',c:'#7c83ff',v:47,u:'% lleno'},
- {n:'Camiones Disponibles',i:'fa-truck',c:'#3ddc84',v:23,u:'unidades'}
-];
-const rbox=document.getElementById('resources');
-resources.forEach((r,idx)=>{
- rbox.innerHTML+=`<div class="card rounded-xl p-4 log-enter" style="animation-delay:${idx*.08}s">
-   <div class="flex items-center justify-between mb-2">
-     <span class="flex items-center gap-2 text-sm font-semibold"><i class="fa-solid ${r.i}" style="color:${r.c}"></i> ${r.n}</span>
-     <span class="mono text-sm font-bold" id="rv${idx}" style="color:${r.c}">${r.v}</span>
-   </div>
-   <div class="h-2 rounded-full" style="background:#0a1018">
-     <div class="h-2 rounded-full bar-fill" id="rb${idx}" style="width:0%;background:${r.c}"></div>
-   </div>
-   <p class="text-[10px] mt-1" style="color:var(--muted)">${r.u}</p>
- </div>`;
-});
-setTimeout(()=>resources.forEach((r,i)=>document.getElementById('rb'+i).style.width=r.v+'%'),200);
+    const firebaseConfig = {
+      apiKey: "AIzaSyCm5TaHEmb1ieHbZR4OZWIVPaTuNRV4eaU",
+      authDomain: "hackaton-nexsync.firebaseapp.com",
+      projectId: "hackaton-nexsync",
+      storageBucket: "hackaton-nexsync.firebasestorage.app",
+      messagingSenderId: "392429210483",
+      appId: "1:392429210483:web:1cc4ae83dbd945e6bc1306"
+    };
 
-/* ---------- LOG ENGINE (bitácora del agente) ---------- */
-const logbox=document.getElementById('logbox');
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-/* Convierte un Timestamp de Firestore a texto legible */
-function tiempoTexto(ts){
-  if(!ts) return 'Ahora';
-  try{
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    const diff = Math.floor((Date.now()-d.getTime())/60000);
-    if(diff<=0) return 'Ahora';
-    return `Hace ${diff} min`;
-  }catch(e){ return 'Ahora'; }
-}
+    async function loadCollection(collectionName, elementId, renderItem) {
+      const container = document.getElementById(elementId);
+      container.innerHTML = "Cargando...";
 
-function renderLog(item){
-  const el=document.createElement('div');
-  el.className='log-enter flex gap-2 items-start';
-  const color = item.color || 'var(--cyan)';
-  const when  = item.when  || tiempoTexto(item.timestamp);
-  el.innerHTML=`<span style="color:var(--muted)" class="shrink-0">[${when}]</span><span style="color:${color}">${item.mensaje}</span>`;
-  logbox.appendChild(el);
-  logbox.scrollTop=logbox.scrollHeight;
-}
-function clearLogs(){logbox.innerHTML='';}
-document.getElementById('btnClear').addEventListener('click', clearLogs);
+      try {
+        const snapshot = await getDocs(collection(db, collectionName));
 
-/* ---------- DEALS (transacciones entre empresas) ---------- */
-const dbox=document.getElementById('deals');
-function renderDeals(lista){
-  dbox.innerHTML='';
-  lista.forEach((d,i)=>{
-   const c = d.color || '#7c83ff';
-   dbox.innerHTML+=`<div class="card rounded-xl p-4 log-enter" style="animation-delay:${i*.1}s">
-     <div class="flex items-center justify-between mb-3">
-       <span class="text-sm font-bold flex items-center gap-2"><i class="fa-solid fa-handshake-angle" style="color:${c}"></i> ${d.empresa||'Empresa'}</span>
-       <span class="mono text-[10px] px-2 py-0.5 rounded" style="background:${c}22;color:${c}">${d.estado||'—'}</span>
-     </div>
-     <div class="flex items-center justify-between text-xs mono">
-       <div><p style="color:var(--muted)">CEDEMOS</p><p class="font-bold">${d.cedemos||'—'}</p></div>
-       <i class="fa-solid fa-right-left" style="color:var(--cyan)"></i>
-       <div class="text-right"><p style="color:var(--muted)">RECIBIMOS</p><p class="font-bold">${d.recibimos||'—'}</p></div>
-     </div>
-   </div>`;
-  });
-}
+        if (snapshot.empty) {
+          container.innerHTML = `<p>No hay datos en <b>${collectionName}</b>.</p>`;
+          return;
+        }
 
-/* ---------- KPIs ---------- */
-function bumpKpisPorAcuerdo(){
-  const neg=document.getElementById('kpiNeg');neg.textContent=parseInt(neg.textContent||'0')+1;
-  const sv=document.getElementById('kpiSaved');sv.textContent='$ '+(8.4+(Math.random()*1.2)).toFixed(1)+'K';
-  const h=document.getElementById('healthPct');let nv=Math.min(96,parseInt(h.textContent)+2);
-  h.textContent=nv+'%';
-  document.getElementById('healthRing').style.strokeDashoffset=314-(314*nv/100);
-}
+        container.innerHTML = "";
 
-/* ============================================================
-   3) ESCUCHA EN TIEMPO REAL (onSnapshot) o RESPALDO LOCAL
-============================================================ */
-
-/* ----- Datos de respaldo (MODO DEMO sin Firestore) ----- */
-const SEED_LOGS=[
- {mensaje:'Sistema inicializado · 7 agentes en red', color:'var(--green)', when:'Hace 5 min'},
- {mensaje:'Agente detectó saturación logística por bloqueo en Montero', color:'var(--amber)', when:'Hace 2 min'},
- {mensaje:'Abriendo negociación encriptada con Agente · Frigorífico BFC 🔒', color:'var(--violet)', when:'Hace 1 min'},
- {mensaje:'Acuerdo: cedemos 2 camiones ociosos ⇄ 500L combustible industrial', color:'var(--cyan)', when:'Ahora'},
- {mensaje:'Confirmando transacción en cadena... ✓ firmada', color:'var(--green)', when:'Ahora'}
-];
-const SEED_DEALS=[
- {empresa:'Frigorífico BFC',      cedemos:'2 Camiones', recibimos:'500L Diésel',   estado:'Confirmado', color:'#3ddc84'},
- {empresa:'Cementos Santa Cruz',  cedemos:'12 MWh',     recibimos:'Crédito $1.2K', estado:'En firma',   color:'#ffb340'},
- {empresa:'Agroindustria Norte',  cedemos:'Espacio Silo',recibimos:'Logística',    estado:'Negociando', color:'#7c83ff'}
-];
-const trickle=[
- {mensaje:'Optimizando ruta alterna por Warnes — ETA reducido 38min', color:'var(--cyan)'},
- {mensaje:'Agente · Cementos SC solicita 12 MWh excedentes', color:'var(--amber)'},
- {mensaje:'Hash de transacción verificado en libro distribuido', color:'var(--green)'},
- {mensaje:'Predicción IA: déficit de diésel en 6h, asegurando reserva', color:'var(--red)'},
- {mensaje:'Negociación con Agroindustria Norte → en curso 🔒', color:'var(--violet)'}
-];
-
-if (FIREBASE_LISTO) {
-  /* --- LISTENER 1: bitácora de alertas/crisis --- */
-  const qAlertas = query(alertasRef, orderBy("timestamp","asc"), limit(60));
-  onSnapshot(qAlertas, (snap)=>{
-    /* Solo procesamos los documentos recién añadidos para animarlos */
-    snap.docChanges().forEach((change)=>{
-      if(change.type === "added"){
-        renderLog(change.doc.data());
-        if((change.doc.data().mensaje||'').toLowerCase().includes('acuerdo')) bumpKpisPorAcuerdo();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          container.innerHTML += renderItem(doc.id, data);
+        });
+      } catch (error) {
+        console.error(error);
+        container.innerHTML = `
+          <p style="color:#f87171;">
+            Error cargando ${collectionName}. Revisa las reglas de Firestore.
+          </p>
+        `;
       }
-    });
-  }, (err)=>{ console.error("onSnapshot alertas_crisis:", err); });
-
-  /* --- LISTENER 2: transacciones entre agentes --- */
-  const qTx = query(transaccionesRef, orderBy("timestamp","desc"), limit(9));
-  onSnapshot(qTx, (snap)=>{
-    const lista = snap.docs.map(d=>d.data());
-    renderDeals(lista);
-  }, (err)=>{ console.error("onSnapshot transacciones_agentes:", err); });
-
-} else {
-  /* --- MODO DEMO: replica el comportamiento sin tocar la BD --- */
-  SEED_LOGS.forEach(renderLog);
-  renderDeals(SEED_DEALS);
-  let t=0;
-  setInterval(()=>{ renderLog(trickle[t%trickle.length]); t++; }, 4500);
-}
-
-/* ============================================================
-   4) BOTÓN "SIMULAR CRISIS"
-   - Con Firestore: inserta un doc real → el listener pinta solo.
-   - Sin Firestore: ejecuta la secuencia local (respaldo demo).
-============================================================ */
-async function escribirCrisisEnFirestore(){
-  /* Inserta una secuencia de eventos en /alertas_crisis */
-  const secuencia=[
-    {mensaje:'🚨 NUEVA CRISIS detectada — recalculando red de agentes', color:'var(--red)'},
-    {mensaje:'Escaneando 7 agentes por recursos compatibles...',        color:'var(--amber)'},
-    {mensaje:'Match encontrado · abriendo canal encriptado 🔒',          color:'var(--violet)'},
-    {mensaje:'✓ Acuerdo autónomo cerrado — sin intervención humana',     color:'var(--green)'}
-  ];
-  for (const ev of secuencia){
-    await addDoc(alertasRef, {
-      mensaje: ev.mensaje,
-      color: ev.color,
-      origen: 'simulacion_demo',
-      timestamp: serverTimestamp()
-    });
-  }
-  /* Registra también una transacción nueva resultante del acuerdo */
-  await addDoc(transaccionesRef, {
-    empresa:  'Agente Autónomo X',
-    cedemos:  'Recurso ocioso',
-    recibimos:'Insumo crítico',
-    estado:   'Confirmado',
-    color:    '#3ddc84',
-    timestamp: serverTimestamp()
-  });
-}
-
-function simularCrisisLocal(){
-  renderLog({mensaje:'🚨 NUEVA CRISIS detectada — recalculando red de agentes', color:'var(--red)', when:'Ahora'});
-  setTimeout(()=>renderLog({mensaje:'Escaneando 7 agentes por recursos compatibles...', color:'var(--amber)', when:'Ahora'}),700);
-  setTimeout(()=>renderLog({mensaje:'Match encontrado · abriendo canal encriptado 🔒', color:'var(--violet)', when:'Ahora'}),1600);
-  setTimeout(()=>{
-    renderLog({mensaje:'✓ Acuerdo autónomo cerrado — sin intervención humana', color:'var(--green)', when:'Ahora'});
-    bumpKpisPorAcuerdo();
-  },2600);
-}
-
-document.getElementById('btnCrisis').addEventListener('click', async ()=>{
-  if (FIREBASE_LISTO){
-    try{
-      await escribirCrisisEnFirestore();   // la pantalla reacciona vía onSnapshot
-    }catch(e){
-      console.error("Error escribiendo crisis en Firestore:", e);
-      simularCrisisLocal();                // si falla la escritura, no rompemos la demo
     }
-  } else {
-    simularCrisisLocal();
-  }
-});
-</script>
+
+    function loadCompanies() {
+      loadCollection("companies", "companiesList", (id, data) => `
+        <div class="item">
+          <strong>${data.name || id}</strong>
+          <p>Sector: ${data.sector || "Sin sector"}</p>
+          <p>Ubicación: ${data.location || "Sin ubicación"}</p>
+          <span class="badge success">${data.status || "sin estado"}</span>
+        </div>
+      `);
+    }
+
+    function loadResources() {
+      loadCollection("resources", "resourcesList", (id, data) => `
+        <div class="item">
+          <strong>${data.name || id}</strong>
+          <p>Tipo: ${data.type || "Sin tipo"}</p>
+          <p>Cantidad: ${data.quantity || 0} ${data.unit || ""}</p>
+          <span class="badge ${data.available ? "success" : "danger"}">
+            ${data.available ? "Disponible" : "No disponible"}
+          </span>
+        </div>
+      `);
+    }
+
+    function loadCrisis() {
+      loadCollection("crisis_events", "crisisList", (id, data) => `
+        <div class="item">
+          <strong>${data.type || id}</strong>
+          <p>${data.description || "Sin descripción"}</p>
+          <p>Ubicación: ${data.location || "Sin ubicación"}</p>
+          <span class="badge danger">${data.severity || "sin severidad"}</span>
+        </div>
+      `);
+    }
+
+    function loadAlerts() {
+      loadCollection("alerts", "alertsList", (id, data) => `
+        <div class="item">
+          <strong>${data.title || id}</strong>
+          <p>${data.message || "Sin mensaje"}</p>
+          <span class="badge warning">${data.level || "sin nivel"}</span>
+        </div>
+      `);
+    }
+
+    function loadNegotiations() {
+      loadCollection("negotiations", "negotiationsList", (id, data) => `
+        <div class="item">
+          <strong>Negociación: ${id}</strong>
+          <p>Empresa: ${data.buyerCompanyId || "N/A"}</p>
+          <p>Recurso: ${data.resourceId || "N/A"}</p>
+          <p>Oferta: ${data.offer || "Sin oferta"}</p>
+          <span class="badge">${data.status || "pendiente"}</span>
+        </div>
+      `);
+    }
+
+    window.createNegotiation = async function () {
+      const buyerCompanyId = document.getElementById("buyerCompanyId").value;
+      const resourceId = document.getElementById("resourceId").value;
+      const offer = document.getElementById("offer").value;
+
+      try {
+        await addDoc(collection(db, "negotiations"), {
+          buyerCompanyId,
+          resourceId,
+          offer,
+          status: "pendiente",
+          createdAt: serverTimestamp()
+        });
+
+        document.getElementById("negotiationResult").innerHTML =
+          `<p style="color:#86efac;">Negociación creada correctamente.</p>`;
+
+        loadNegotiations();
+      } catch (error) {
+        console.error(error);
+        document.getElementById("negotiationResult").innerHTML =
+          `<p style="color:#f87171;">Error creando negociación.</p>`;
+      }
+    };
+
+    loadCompanies();
+    loadResources();
+    loadCrisis();
+    loadAlerts();
+    loadNegotiations();
+  </script>
 </body>
 </html>

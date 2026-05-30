@@ -1,143 +1,174 @@
 # NexSync
 
-Plataforma de resiliencia operativa multiagente para crisis locales en Santa Cruz de la Sierra.
+**NexSync** es una plataforma de resiliencia operativa para empresas de Santa Cruz ante crisis locales como bloqueos, cortes de energía, escasez de combustible, problemas logísticos o interrupciones de suministro.
+
+El MVP funciona como un **Enterprise Resilience Command Center** que conecta empresas, recursos críticos, eventos de riesgo, alertas, negociaciones y una capa de IA generativa para apoyar decisiones operativas.
+
+---
 
 ## Problema
-En Santa Cruz, eventos como bloqueos, cortes de energía, escasez de combustible, interrupciones logísticas o falta de agua pueden afectar directamente la operación de empresas, productores, industrias y servicios esenciales.
-Actualmente, muchas organizaciones reaccionan de forma aislada, sin coordinación, sin visibilidad compartida de recursos y sin mecanismos inteligentes para anticipar riesgos o negociar apoyo operativo.
+
+Durante una crisis local, muchas empresas reaccionan de forma aislada:
+
+- No saben qué empresas están en riesgo.
+- No saben qué recursos críticos están disponibles.
+- No tienen una forma rápida de coordinar apoyo operativo.
+- Las decisiones se toman tarde, sin visibilidad compartida.
+- La falta de coordinación puede generar pérdidas económicas y operativas.
+
+---
 
 ## Solución
-NexSync propone una red operativa inteligente donde cada empresa puede registrar su estado, necesidades y recursos disponibles. La plataforma permite simular agentes de IA que monitorean recursos críticos, detectan riesgos y proponen negociaciones entre empresas.
 
-## Objetivo del MVP
-El MVP permite:
-* Visualizar empresas registradas.
-* Visualizar recursos críticos disponibles.
-* Visualizar eventos de crisis activos.
-* Visualizar alertas operativas.
-* Crear negociaciones de recursos entre empresas.
-* Conectar una interfaz web con Firebase Firestore.
+NexSync centraliza la información crítica en una consola operativa conectada a Firebase Firestore.
 
-## Flujo principal
-1. Una empresa registra su estado operativo.
-2. El sistema muestra sus necesidades de agua, energía o combustible.
-3. Se registra un evento de crisis local.
-4. La plataforma muestra alertas operativas.
-5. Una empresa solicita un recurso crítico.
-6. Se crea una negociación en Firestore.
-7. La información queda disponible para la demo.
+La plataforma permite:
 
-## Arquitectura técnica
+- Monitorear empresas y estado operativo.
+- Visualizar recursos críticos disponibles.
+- Detectar eventos de riesgo activos.
+- Consultar alertas operativas.
+- Crear negociaciones manuales.
+- Generar recomendaciones operativas.
+- Simular coordinación multirol entre empresas.
+- Generar un brief ejecutivo con Gemini API.
+- Cambiar entre vista global y vistas por empresa.
+
+---
+
+## MVP actual
+
+El MVP incluye:
+
+- Dashboard conectado a Firebase Firestore.
+- Vista global de consorcio.
+- Vistas por organización/empresa.
+- KPIs operativos.
+- Empresas monitoreadas.
+- Recursos críticos.
+- Eventos de riesgo.
+- Alertas.
+- Historial de negociaciones.
+- Motor de recomendación operativa.
+- Flujo de coordinación multirol.
+- Módulo de pruebas para inyectar crisis.
+- Integración con Gemini API para generar AI Operational Briefs.
+- Preparación para deploy en Firebase Hosting.
+
+---
+
+## Funcionalidades principales
+
+### 1. Consola de operaciones
+
+Muestra una vista general del estado operativo:
+
+- Empresas monitoreadas.
+- Recursos disponibles.
+- Eventos de riesgo activos.
+- Negociaciones registradas.
+- Crisis prioritaria detectada.
+
+---
+
+### 2. Vistas por organización
+
+NexSync permite cambiar entre:
+
+- Vista Consorcio Global.
+- Vista AgroNorte.
+- Vista EnergiaPiraí.
+- Vista TransporteMontero.
+- Vista FrigoSantaCruz.
+
+La vista global muestra toda la red operativa.  
+Las vistas por empresa muestran información filtrada según la organización seleccionada.
+
+En producción, esta lógica se protegería con Firebase Auth y reglas de Firestore por organización.
+
+---
+
+### 3. Decision Engine
+
+El motor de decisión analiza:
+
+- Crisis activas.
+- Empresas afectadas.
+- Recursos disponibles.
+- Ubicación.
+- Severidad.
+- Proveedor sugerido.
+
+Luego genera una recomendación operativa para crear una negociación prioritaria.
+
+---
+
+### 4. Gemini AI Operational Brief
+
+El MVP integra Gemini API para generar un resumen ejecutivo operativo a partir del contexto real del sistema.
+
+El brief generado incluye:
+
+- Resumen ejecutivo.
+- Riesgo detectado.
+- Empresa afectada.
+- Recurso recomendado.
+- Impacto operativo.
+- Justificación.
+- Próximo paso sugerido.
+
+Esta integración demuestra uso real de IA generativa dentro del flujo operativo.
+
+---
+
+### 5. Coordination Workflow
+
+Simula una coordinación multirol entre:
+
+- Empresa afectada.
+- Proveedor del recurso.
+- Evaluador de riesgo.
+- Capa coordinadora NexSync.
+
+El resultado puede registrarse como una negociación validada.
+
+---
+
+### 6. Módulo de pruebas
+
+Incluye un inyector de crisis para demo.
+
+Permite crear eventos críticos en Firestore y ver cómo el sistema recalcula KPIs y actualiza el tablero.
+
+Escenarios disponibles:
+
+- Bloqueo de ruta.
+- Déficit de diésel.
+- Corte de energía.
+- Estrés hídrico.
+
+---
+
+## Tecnologías usadas
+
+- HTML
+- CSS
+- JavaScript
+- Firebase Firestore
+- Firebase Hosting
+- Gemini API
+- GitHub
+- Live Server para desarrollo local
+
+---
+
+## Estructura del proyecto
+
 ```txt
-Usuario
-  ↓
-Interfaz Web NexSync
-  ↓
-Firebase Web SDK
-  ↓
-Cloud Firestore
-  ↓
-Colecciones:
-- companies
-- resources
-- crisis_events
-- alerts
-- negotiations
-```
-
-## Tecnologías utilizadas
-* HTML
-* CSS
-* JavaScript
-* Firebase Firestore
-* Firebase Web SDK
-* GitHub
-
-## Estructura de Firestore
-### companies
-Guarda información de empresas participantes.
-Campos principales:
-```txt
-name
-sector
-location
-status
-waterNeed
-energyNeed
-fuelNeed
-```
-
-### resources
-Guarda recursos críticos disponibles.
-Campos principales:
-```txt
-type
-name
-quantity
-unit
-ownerCompanyId
-available
-```
-
-### crisis_events
-Guarda eventos de crisis locales.
-Campos principales:
-
-```txt
-type
-location
-severity
-description
-active
-```
-
-### alerts
-Guarda alertas operativas.
-Campos principales:
-```txt
-title
-message
-level
-read
-```
-
-### negotiations
-Guarda negociaciones de recursos entre empresas.
-Campos principales:
-```txt
-buyerCompanyId
-resourceId
-offer
-status
-createdAt
-```
-
-## Aplicación de IA
-La visión del sistema es implementar agentes de IA capaces de:
-
-* Analizar necesidades operativas de cada empresa.
-* Detectar riesgos de desabastecimiento.
-* Priorizar recursos críticos.
-* Recomendar acciones ante crisis.
-* Simular negociación entre empresas.
-* Generar alertas inteligentes.
-
-## Cómo ejecutar el MVP
-1. Clonar o descargar el repositorio.
-2. Abrir el archivo `index.html`.
-3. Ejecutarlo con Live Server en VS Code.
-4. Verificar que Firestore tenga las colecciones necesarias.
-5. Probar la creación de negociaciones desde la interfaz.
-
-## Estado del proyecto
-MVP en desarrollo para la Hackathon Build With AI 2026 Santa Cruz.
-
-## Equipo
-Nombre del equipo: BOCOL
-Integrantes:
-* Diego Andrade Canedo
-* Elias Daniel Roca Padilla
-* Salim Elias Suarez Vespa
-* David Rodrigo Torrico Vera
-* Sebastian Aspiazu Mojica
-* Jherson Mathias Frias Cerspedes
+NexSync/
+├─ index.html
+├─ config.js          # No se sube a GitHub
+├─ .gitignore
+├─ README.md
+├─ assets/
+└─ docs/

@@ -27,6 +27,7 @@
       --yellow: #f59e0b;
       --red: #ef4444;
       --orange: #ea580c;
+      --violet: #8b5cf6;
     }
 
     * {
@@ -279,6 +280,71 @@
     .view-select option {
       background: #0b111b;
       color: var(--text);
+    }
+
+    .view-select optgroup {
+      background: #0b111b;
+      color: var(--muted);
+      font-weight: 800;
+      font-style: normal;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* ===== Pestañas de sistema ===== */
+    .tabbar {
+      display: flex;
+      gap: 6px;
+      padding: 14px 32px 0;
+      border-bottom: 1px solid var(--line);
+      background: rgba(8, 11, 16, 0.6);
+    }
+
+    .tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 11px 16px;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: 10px 10px 0 0;
+      color: var(--muted-2);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+      position: relative;
+      top: 1px;
+    }
+
+    .tab:hover {
+      color: var(--text);
+      background: rgba(15, 19, 27, 0.6);
+    }
+
+    .tab.active {
+      color: var(--text);
+      background: var(--bg);
+      border-color: var(--line);
+      border-bottom: 1px solid var(--bg);
+    }
+
+    .tab-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: var(--muted);
+    }
+
+    .tab[data-tab="operations"] .tab-dot { background: var(--cyan); }
+    .tab[data-tab="sandbox"] .tab-dot { background: var(--violet); }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
     }
 
     .content {
@@ -586,8 +652,18 @@
       background: #c2410c;
     }
 
+    .btn-violet {
+      background: var(--violet);
+    }
+
     button:hover {
       filter: brightness(1.08);
+    }
+
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      filter: none;
     }
 
     .result-box {
@@ -691,6 +767,86 @@
       color: var(--muted);
     }
 
+    /* ===== Módulo de pruebas (sandbox) ===== */
+    .sandbox-shell {
+      max-width: 920px;
+    }
+
+    .sandbox-card {
+      background:
+        linear-gradient(180deg, rgba(139, 92, 246, 0.07), rgba(8, 11, 16, 0)) ,
+        var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 26px;
+      margin-bottom: 18px;
+    }
+
+    .sandbox-tagline {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #c4b5fd;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.32);
+      border-radius: 999px;
+      padding: 5px 12px;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 16px;
+    }
+
+    .sandbox-card h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      letter-spacing: -0.5px;
+    }
+
+    .sandbox-card p.desc {
+      color: var(--muted-2);
+      font-size: 14px;
+      line-height: 1.65;
+      margin: 0 0 18px;
+      max-width: 640px;
+    }
+
+    .injector-target {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .injector-target strong {
+      color: var(--text);
+    }
+
+    .terminal {
+      background: #05070b;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 16px 18px;
+      font-family: "SFMono-Regular", ui-monospace, "JetBrains Mono", Consolas, monospace;
+      font-size: 12.5px;
+      line-height: 1.7;
+      color: #cbd5e1;
+      min-height: 140px;
+      max-height: 280px;
+      overflow-y: auto;
+      margin-top: 18px;
+    }
+
+    .terminal .log-time { color: #64748b; }
+    .terminal .log-ok { color: #86efac; }
+    .terminal .log-warn { color: #fcd34d; }
+    .terminal .log-crit { color: #fca5a5; }
+    .terminal .log-info { color: #93c5fd; }
+    .terminal .log-violet { color: #c4b5fd; }
+
     @media (max-width: 1180px) {
       .app-shell {
         grid-template-columns: 1fr;
@@ -715,7 +871,8 @@
 
     @media (max-width: 700px) {
       .topbar,
-      .content {
+      .content,
+      .tabbar {
         padding-left: 18px;
         padding-right: 18px;
       }
@@ -797,11 +954,15 @@
         <div class="topbar-right">
           <div class="view-switch">
             <select id="viewSelect" class="view-select" aria-label="Seleccionar vista de organización">
-              <option value="global">Vista: Consorcio Global</option>
-              <option value="empresa_demo_1">Vista: AgroNorte</option>
-              <option value="empresa_demo_2">Vista: EnergiaPiraí</option>
-              <option value="empresa_demo_3">Vista: TransporteMontero</option>
-              <option value="empresa_demo_4">Vista: FrigoSantaCruz</option>
+              <optgroup label="Torre de Control">
+                <option value="global">Vista: Consorcio Global</option>
+              </optgroup>
+              <optgroup label="Vistas de Usuario (Empresas)">
+                <option value="empresa_demo_1">Vista: AgroNorte</option>
+                <option value="empresa_demo_2">Vista: EnergiaPiraí</option>
+                <option value="empresa_demo_3">Vista: TransporteMontero</option>
+                <option value="empresa_demo_4">Vista: FrigoSantaCruz</option>
+              </optgroup>
             </select>
           </div>
 
@@ -809,7 +970,19 @@
         </div>
       </header>
 
-      <section class="content">
+      <div class="tabbar" id="systemTabs">
+        <div class="tab active" data-tab="operations">
+          <span class="tab-dot"></span>
+          Consola de Operaciones
+        </div>
+        <div class="tab" data-tab="sandbox">
+          <span class="tab-dot"></span>
+          Módulo de Pruebas · Demo de Simular Crisis
+        </div>
+      </div>
+
+      <!-- ===================== PESTAÑA 1: CONSOLA DE OPERACIONES ===================== -->
+      <section class="content tab-panel active" id="operationsPanel">
         <section class="overview" id="overviewSection">
           <div class="hero-card">
             <div>
@@ -1009,6 +1182,41 @@
           <div id="negotiationsList">Loading negotiations...</div>
         </section>
       </section>
+
+      <!-- ===================== PESTAÑA 2: MÓDULO DE PRUEBAS ===================== -->
+      <section class="content tab-panel" id="sandboxPanel">
+        <div class="sandbox-shell">
+          <div class="sandbox-card">
+            <span class="sandbox-tagline">● Developer Module · Test Harness</span>
+            <h2>Inyector de Crisis</h2>
+            <p class="desc">
+              Inyector de eventos críticos en tiempo real para simulación de resiliencia logística.
+              Cada inyección crea un evento real en la colección <b>crisis_events</b> de Firestore,
+              recalcula los KPIs del sistema y queda disponible para el motor de decisiones.
+              Vuelve a la pestaña <b>Consola de Operaciones</b> para ver el impacto propagado en todo el tablero.
+            </p>
+
+            <div class="injector-target">
+              Destino del evento:
+              <strong id="injectorTarget">Consorcio Global</strong>
+            </div>
+
+            <div class="button-row">
+              <button class="btn-violet" id="injectCrisisButton" onclick="injectCrisisEvent()">
+                Simular Crisis
+              </button>
+
+              <button class="btn-secondary" id="clearLastCrisisButton" onclick="clearLastInjectedCrisis()" disabled>
+                Borrar última crisis inyectada
+              </button>
+            </div>
+
+            <div class="terminal" id="sandboxTerminal">
+              <div><span class="log-time">[--:--:--]</span> Inyector listo. Esperando orden de simulación...</div>
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -1019,6 +1227,8 @@
       collection,
       getDocs,
       addDoc,
+      deleteDoc,
+      doc,
       serverTimestamp
     } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
@@ -1045,6 +1255,7 @@
     let currentView = "global";
     let recommendedNegotiation = null;
     let multiAgentNegotiation = null;
+    let lastInjectedCrisisId = null;
 
     const VIEW_CONFIG = {
       global: {
@@ -1132,11 +1343,13 @@
       const companyName = normalizeText(activeCompany.name);
       const companyLocation = normalizeText(activeCompany.location);
       const companySector = normalizeText(activeCompany.sector);
+      const companyId = activeCompany._id;
 
       return cache.crisis_events.filter((event) => {
         const text = normalizeText(`${event.type} ${event.description} ${event.location}`);
 
         return (
+          event.companyId === companyId ||
           text.includes(companyName) ||
           text.includes(companyLocation) ||
           text.includes(companySector)
@@ -1736,6 +1949,131 @@
       }
     };
 
+    /* ===================== INYECTOR DE CRISIS (Módulo de Pruebas) ===================== */
+
+    const CRISIS_SCENARIOS = [
+      {
+        type: "Bloqueo de ruta",
+        description: "Bloqueo en la carretera a Montero compromete la logística de transporte y combustible.",
+        location: "Montero",
+        severity: "critica"
+      },
+      {
+        type: "Déficit de diésel",
+        description: "Déficit de diésel reportado en el Parque Industrial, riesgo para flota y generadores.",
+        location: "Parque Industrial",
+        severity: "alta"
+      },
+      {
+        type: "Corte de energía",
+        description: "Corte eléctrico no programado afecta capacidad de frío y operación continua.",
+        location: "Santa Cruz",
+        severity: "critica"
+      },
+      {
+        type: "Estrés hídrico",
+        description: "Reducción de suministro de agua industrial impacta riego y procesos productivos.",
+        location: "Norte Integrado",
+        severity: "alta"
+      }
+    ];
+
+    let scenarioIndex = 0;
+
+    function sandboxLog(message, level = "info") {
+      const terminal = document.getElementById("sandboxTerminal");
+      if (!terminal) return;
+
+      const now = new Date().toLocaleTimeString("es-BO");
+      const line = document.createElement("div");
+      line.innerHTML = `<span class="log-time">[${now}]</span> <span class="log-${level}">${message}</span>`;
+      terminal.appendChild(line);
+      terminal.scrollTop = terminal.scrollHeight;
+    }
+
+    function refreshInjectorTarget() {
+      const targetEl = document.getElementById("injectorTarget");
+      if (!targetEl) return;
+      const config = VIEW_CONFIG[currentView] || VIEW_CONFIG.global;
+      targetEl.textContent = isGlobalView()
+        ? "Consorcio Global"
+        : `${config.label} (${config.companyId})`;
+    }
+
+    window.injectCrisisEvent = async function () {
+      const button = document.getElementById("injectCrisisButton");
+      const clearButton = document.getElementById("clearLastCrisisButton");
+      const activeCompany = getActiveCompany();
+
+      const scenario = CRISIS_SCENARIOS[scenarioIndex % CRISIS_SCENARIOS.length];
+      scenarioIndex++;
+
+      const payload = {
+        type: scenario.type,
+        description: scenario.description,
+        location: activeCompany ? (activeCompany.location || scenario.location) : scenario.location,
+        severity: scenario.severity,
+        active: true,
+        source: "sandbox_injector",
+        createdAt: serverTimestamp()
+      };
+
+      // Si hay una empresa de la vista activa, etiquetamos el evento para esa empresa.
+      if (activeCompany) {
+        payload.companyId = activeCompany._id;
+      }
+
+      try {
+        button.disabled = true;
+        sandboxLog(`Inyectando evento crítico: "${scenario.type}" → ${isGlobalView() ? "Consorcio Global" : activeCompany.name}`, "violet");
+
+        const ref = await addDoc(collection(db, "crisis_events"), payload);
+        lastInjectedCrisisId = ref.id;
+
+        sandboxLog(`Evento persistido en Firestore · id=${ref.id}`, "ok");
+        sandboxLog("Recalculando KPIs y propagando al tablero...", "info");
+
+        await loadAllData();
+
+        sandboxLog(`Severidad: ${scenario.severity.toUpperCase()} · Recursos disponibles re-evaluados.`, "warn");
+        sandboxLog("Listo. Cambia a 'Consola de Operaciones' para ver el impacto.", "ok");
+
+        clearButton.disabled = false;
+      } catch (error) {
+        console.error(error);
+        sandboxLog("ERROR al inyectar el evento en Firestore. Revisa reglas/conexión.", "crit");
+      } finally {
+        button.disabled = false;
+      }
+    };
+
+    window.clearLastInjectedCrisis = async function () {
+      const clearButton = document.getElementById("clearLastCrisisButton");
+
+      if (!lastInjectedCrisisId) {
+        sandboxLog("No hay crisis inyectada para borrar.", "warn");
+        return;
+      }
+
+      try {
+        clearButton.disabled = true;
+        sandboxLog(`Eliminando evento inyectado · id=${lastInjectedCrisisId}`, "info");
+
+        await deleteDoc(doc(db, "crisis_events", lastInjectedCrisisId));
+        lastInjectedCrisisId = null;
+
+        sandboxLog("Evento eliminado de Firestore. Recargando tablero...", "ok");
+        await loadAllData();
+        sandboxLog("Tablero restaurado al estado previo.", "ok");
+      } catch (error) {
+        console.error(error);
+        sandboxLog("ERROR al borrar el evento. Puedes eliminarlo manualmente en Firestore.", "crit");
+        clearButton.disabled = false;
+      }
+    };
+
+    /* ===================== NAVEGACIÓN Y PESTAÑAS ===================== */
+
     function setupSidebarNavigation() {
       const navItems = document.querySelectorAll(".nav-item");
 
@@ -1743,6 +2081,9 @@
         item.addEventListener("click", () => {
           const targetId = item.getAttribute("data-target");
           const target = document.getElementById(targetId);
+
+          // La navegación lateral siempre opera sobre la Consola de Operaciones
+          activateTab("operations");
 
           if (!target) return;
 
@@ -1753,6 +2094,27 @@
             behavior: "smooth",
             block: "start"
           });
+        });
+      });
+    }
+
+    function activateTab(tabName) {
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.classList.toggle("active", tab.getAttribute("data-tab") === tabName);
+      });
+
+      document.getElementById("operationsPanel").classList.toggle("active", tabName === "operations");
+      document.getElementById("sandboxPanel").classList.toggle("active", tabName === "sandbox");
+
+      if (tabName === "sandbox") {
+        refreshInjectorTarget();
+      }
+    }
+
+    function setupSystemTabs() {
+      document.querySelectorAll(".tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          activateTab(tab.getAttribute("data-tab"));
         });
       });
     }
@@ -1785,6 +2147,7 @@
         renderAlerts();
         renderNegotiations();
         applyAgentBrainText();
+        refreshInjectorTarget();
 
         document.getElementById("multiAgentOutput").innerHTML =
           "Run the coordination workflow to validate a negotiation between organizations.";
@@ -1792,7 +2155,9 @@
     }
 
     setupSidebarNavigation();
+    setupSystemTabs();
     setupViewSwitch();
+    refreshInjectorTarget();
     loadAllData();
   </script>
 </body>

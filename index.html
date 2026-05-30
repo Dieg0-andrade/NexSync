@@ -80,6 +80,10 @@
       background: #ca8a04;
     }
 
+    .purple {
+      background: #7c3aed;
+    }
+
     button {
       background: #2563eb;
       color: white;
@@ -88,10 +92,28 @@
       border-radius: 10px;
       cursor: pointer;
       font-weight: bold;
+      margin-right: 8px;
+      margin-top: 8px;
     }
 
     button:hover {
       background: #1d4ed8;
+    }
+
+    .agent-button {
+      background: #7c3aed;
+    }
+
+    .agent-button:hover {
+      background: #6d28d9;
+    }
+
+    .green-button {
+      background: #16a34a;
+    }
+
+    .green-button:hover {
+      background: #15803d;
     }
 
     input, select {
@@ -102,10 +124,56 @@
       border: 1px solid #475569;
       background: #020617;
       color: white;
+      box-sizing: border-box;
     }
 
     .full {
       grid-column: 1 / -1;
+    }
+
+    .agent-panel {
+      background: linear-gradient(135deg, #111827, #312e81);
+      border: 1px solid #6366f1;
+    }
+
+    .agent-result {
+      margin-top: 14px;
+      background: #020617;
+      border: 1px solid #475569;
+      border-radius: 14px;
+      padding: 16px;
+    }
+
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .agent-metric {
+      background: #111827;
+      border: 1px solid #374151;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .agent-metric small {
+      color: #cbd5e1;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .agent-metric strong {
+      color: #ffffff;
+    }
+
+    .muted {
+      color: #cbd5e1;
+    }
+
+    .hidden {
+      display: none;
     }
   </style>
 </head>
@@ -137,6 +205,25 @@
     <section class="card">
       <h2>Alertas</h2>
       <div id="alertsList">Cargando alertas...</div>
+    </section>
+
+    <section class="card full agent-panel">
+      <h2>Agente NexSync</h2>
+      <p class="muted">
+        El agente analiza empresas, crisis activas y recursos disponibles para recomendar una acción operativa.
+      </p>
+
+      <button class="agent-button" onclick="generateAgentRecommendation()">
+        Generar recomendación del agente
+      </button>
+
+      <button id="createAgentNegotiationButton" class="green-button hidden" onclick="createAgentNegotiation()">
+        Crear negociación recomendada
+      </button>
+
+      <div id="agentOutput" class="agent-result">
+        Presiona el botón para que el agente analice la situación actual.
+      </div>
     </section>
 
     <section class="card full">
@@ -184,38 +271,87 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function loadCollection(collectionName, elementId, renderItem) {
+    let cache = {
+      companies: [],
+      resources: [],
+      crisis_events: [],
+      alerts: [],
+      negotiations: []
+    };
+
+    let recommendedNegotiation = null;
+
+    function normalizeText(value) {
+      return String(value || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase();
+    }
+
+    async function getCollectionData(collectionName) {
+      const snapshot = await getDocs(collection(db, collectionName));
+      return snapshot.docs.map((doc) => ({
+        _id: doc.id,
+        ...doc.data()
+      }));
+    }
+
+    function renderList(elementId, items, collectionName, renderItem) {
       const container = document.getElementById(elementId);
-      container.innerHTML = "Cargando...";
 
+      if (!items || items.length === 0) {
+        container.innerHTML = `<p>No hay datos en <b>${collectionName}</b>.</p>`;
+        return;
+      }
+
+      container.innerHTML = "";
+      items.forEach((item) => {
+        container.innerHTML += renderItem(item);
+      });
+    }
+
+    async function loadAllData() {
       try {
-        const snapshot = await getDocs(collection(db, collectionName));
+        const [
+          companies,
+          resources,
+          crisisEvents,
+          alerts,
+          negotiations
+        ] = await Promise.all([
+          getCollectionData("companies"),
+          getCollectionData("resources"),
+          getCollectionData("crisis_events"),
+          getCollectionData("alerts"),
+          getCollectionData("negotiations")
+        ]);
 
-        if (snapshot.empty) {
-          container.innerHTML = `<p>No hay datos en <b>${collectionName}</b>.</p>`;
-          return;
-        }
+        cache.companies = companies;
+        cache.resources = resources;
+        cache.crisis_events = crisisEvents;
+        cache.alerts = alerts;
+        cache.negotiations = negotiations;
 
-        container.innerHTML = "";
+        renderCompanies();
+        renderResources();
+        renderCrisis();
+        renderAlerts();
+        renderNegotiations();
 
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          container.innerHTML += renderItem(doc.id, data);
-        });
       } catch (error) {
         console.error(error);
-        container.innerHTML = `
-          <p style="color:#f87171;">
-            Error cargando ${collectionName}. Revisa las reglas de Firestore.
-          </p>
-        `;
+        document.getElementById("companiesList").innerHTML = `<p style="color:#f87171;">Error cargando datos.</p>`;
+        document.getElementById("resourcesList").innerHTML = `<p style="color:#f87171;">Error cargando datos.</p>`;
+        document.getElementById("crisisList").innerHTML = `<p style="color:#f87171;">Error cargando datos.</p>`;
+        document.getElementById("alertsList").innerHTML = `<p style="color:#f87171;">Error cargando datos.</p>`;
+        document.getElementById("negotiationsList").innerHTML = `<p style="color:#f87171;">Error cargando datos.</p>`;
       }
     }
 
-    function loadCompanies() {
-      loadCollection("companies", "companiesList", (id, data) => `
+    function renderCompanies() {
+      renderList("companiesList", cache.companies, "companies", (data) => `
         <div class="item">
-          <strong>${data.name || id}</strong>
+          <strong>${data.name || data._id}</strong>
           <p>Sector: ${data.sector || "Sin sector"}</p>
           <p>Ubicación: ${data.location || "Sin ubicación"}</p>
           <span class="badge success">${data.status || "sin estado"}</span>
@@ -223,10 +359,10 @@
       `);
     }
 
-    function loadResources() {
-      loadCollection("resources", "resourcesList", (id, data) => `
+    function renderResources() {
+      renderList("resourcesList", cache.resources, "resources", (data) => `
         <div class="item">
-          <strong>${data.name || id}</strong>
+          <strong>${data.name || data._id}</strong>
           <p>Tipo: ${data.type || "Sin tipo"}</p>
           <p>Cantidad: ${data.quantity || 0} ${data.unit || ""}</p>
           <span class="badge ${data.available ? "success" : "danger"}">
@@ -236,10 +372,10 @@
       `);
     }
 
-    function loadCrisis() {
-      loadCollection("crisis_events", "crisisList", (id, data) => `
+    function renderCrisis() {
+      renderList("crisisList", cache.crisis_events, "crisis_events", (data) => `
         <div class="item">
-          <strong>${data.type || id}</strong>
+          <strong>${data.type || data._id}</strong>
           <p>${data.description || "Sin descripción"}</p>
           <p>Ubicación: ${data.location || "Sin ubicación"}</p>
           <span class="badge danger">${data.severity || "sin severidad"}</span>
@@ -247,20 +383,20 @@
       `);
     }
 
-    function loadAlerts() {
-      loadCollection("alerts", "alertsList", (id, data) => `
+    function renderAlerts() {
+      renderList("alertsList", cache.alerts, "alerts", (data) => `
         <div class="item">
-          <strong>${data.title || id}</strong>
+          <strong>${data.title || data._id}</strong>
           <p>${data.message || "Sin mensaje"}</p>
           <span class="badge warning">${data.level || "sin nivel"}</span>
         </div>
       `);
     }
 
-    function loadNegotiations() {
-      loadCollection("negotiations", "negotiationsList", (id, data) => `
+    function renderNegotiations() {
+      renderList("negotiationsList", cache.negotiations, "negotiations", (data) => `
         <div class="item">
-          <strong>Negociación: ${id}</strong>
+          <strong>Negociación: ${data._id}</strong>
           <p>Empresa: ${data.buyerCompanyId || "N/A"}</p>
           <p>Recurso: ${data.resourceId || "N/A"}</p>
           <p>Oferta: ${data.offer || "Sin oferta"}</p>
@@ -268,6 +404,246 @@
         </div>
       `);
     }
+
+    function findCompanyById(companyId) {
+      return cache.companies.find((company) => company._id === companyId);
+    }
+
+    function getResourceKeywordsForCrisis(crisis) {
+      const text = normalizeText(`${crisis.type} ${crisis.description} ${crisis.location}`);
+
+      if (text.includes("energia") || text.includes("electrico") || text.includes("corte")) {
+        return ["energia", "generador", "electrico", "kwh"];
+      }
+
+      if (text.includes("combustible") || text.includes("diesel") || text.includes("bloqueo")) {
+        return ["combustible", "diesel", "camion", "transporte"];
+      }
+
+      if (text.includes("agua") || text.includes("hidrico") || text.includes("riego")) {
+        return ["agua", "tanque", "litros"];
+      }
+
+      if (text.includes("logistica") || text.includes("transporte") || text.includes("carretera")) {
+        return ["camion", "transporte", "logistica", "combustible"];
+      }
+
+      return ["combustible", "energia", "agua", "camion", "generador"];
+    }
+
+    function findAffectedCompany(crisis) {
+  const crisisLocation = normalizeText(crisis.location);
+  const crisisDescription = normalizeText(crisis.description);
+
+  // 1. Primero busca empresas mencionadas directamente en la descripción de la crisis
+  const mentionedCompany = cache.companies.find((company) => {
+    const companyName = normalizeText(company.name);
+    return companyName && crisisDescription.includes(companyName);
+  });
+
+  if (mentionedCompany) return mentionedCompany;
+
+  // 2. Luego prioriza empresas en riesgo dentro de la zona afectada
+  const riskCompanyInLocation = cache.companies.find((company) => {
+    const companyLocation = normalizeText(company.location);
+    const companyStatus = normalizeText(company.status);
+
+    const isSameLocation =
+      companyLocation &&
+      (
+        crisisLocation.includes(companyLocation) ||
+        companyLocation.includes(crisisLocation)
+      );
+
+    const isAtRisk =
+      companyStatus.includes("riesgo") ||
+      companyStatus.includes("critica") ||
+      companyStatus.includes("crisis");
+
+    return isSameLocation && isAtRisk;
+  });
+
+  if (riskCompanyInLocation) return riskCompanyInLocation;
+
+  // 3. Luego busca cualquier empresa en riesgo
+  const riskCompany = cache.companies.find((company) => {
+    const status = normalizeText(company.status);
+    return status.includes("riesgo") || status.includes("critica") || status.includes("crisis");
+  });
+
+  if (riskCompany) return riskCompany;
+
+  // 4. Finalmente busca por ubicación
+  const locationMatch = cache.companies.find((company) => {
+    const companyLocation = normalizeText(company.location);
+
+    return (
+      companyLocation &&
+      (
+        crisisLocation.includes(companyLocation) ||
+        crisisDescription.includes(companyLocation)
+      )
+    );
+  });
+
+  if (locationMatch) return locationMatch;
+
+  return cache.companies[0] || null;
+}
+
+    function findRecommendedResource(crisis) {
+      const keywords = getResourceKeywordsForCrisis(crisis);
+
+      const resource = cache.resources.find((resource) => {
+        const text = normalizeText(`${resource.name} ${resource.type} ${resource.unit}`);
+        const isAvailable = resource.available !== false;
+
+        return isAvailable && keywords.some((keyword) => text.includes(keyword));
+      });
+
+      if (resource) return resource;
+
+      return cache.resources.find((resource) => resource.available !== false) || null;
+    }
+
+    function getPriority(crisis) {
+      const severity = normalizeText(crisis.severity);
+
+      if (severity.includes("critica") || severity.includes("crítica")) {
+        return "crítica";
+      }
+
+      if (severity.includes("alta")) {
+        return "alta";
+      }
+
+      return "media";
+    }
+
+    window.generateAgentRecommendation = function () {
+      const output = document.getElementById("agentOutput");
+      const button = document.getElementById("createAgentNegotiationButton");
+
+      recommendedNegotiation = null;
+      button.classList.add("hidden");
+
+      const activeCrises = cache.crisis_events.filter((crisis) => crisis.active !== false);
+
+      if (cache.companies.length === 0 || cache.resources.length === 0 || activeCrises.length === 0) {
+        output.innerHTML = `
+          <p style="color:#f87171;">
+            El agente no tiene datos suficientes. Verifica que existan empresas, recursos y crisis activas en Firestore.
+          </p>
+        `;
+        return;
+      }
+
+      const selectedCrisis =
+        activeCrises.find((crisis) => normalizeText(crisis.severity).includes("critica")) ||
+        activeCrises.find((crisis) => normalizeText(crisis.severity).includes("alta")) ||
+        activeCrises[0];
+
+      const affectedCompany = findAffectedCompany(selectedCrisis);
+      const recommendedResource = findRecommendedResource(selectedCrisis);
+
+      if (!affectedCompany || !recommendedResource) {
+        output.innerHTML = `
+          <p style="color:#f87171;">
+            El agente detectó una crisis, pero no encontró una empresa afectada o recurso disponible para recomendar.
+          </p>
+        `;
+        return;
+      }
+
+      const providerCompany = findCompanyById(recommendedResource.ownerCompanyId);
+      const priority = getPriority(selectedCrisis);
+
+      recommendedNegotiation = {
+        buyerCompanyId: affectedCompany._id,
+        resourceId: recommendedResource._id,
+        offer: `Solicitud prioritaria recomendada por Agente NexSync para atender ${selectedCrisis.type || "crisis activa"} en ${selectedCrisis.location || "zona afectada"}`,
+        status: "recomendada_por_agente",
+        createdAt: serverTimestamp()
+      };
+
+      output.innerHTML = `
+        <h3>Recomendación generada por Agente NexSync</h3>
+
+        <p>
+          <strong>Riesgo detectado:</strong>
+          ${selectedCrisis.description || "Crisis activa detectada."}
+        </p>
+
+        <div class="agent-grid">
+          <div class="agent-metric">
+            <small>Prioridad</small>
+            <strong>${priority}</strong>
+          </div>
+
+          <div class="agent-metric">
+            <small>Empresa afectada</small>
+            <strong>${affectedCompany.name || affectedCompany._id}</strong>
+          </div>
+
+          <div class="agent-metric">
+            <small>Recurso recomendado</small>
+            <strong>${recommendedResource.name || recommendedResource._id}</strong>
+          </div>
+
+          <div class="agent-metric">
+            <small>Proveedor sugerido</small>
+            <strong>${providerCompany ? providerCompany.name : (recommendedResource.ownerCompanyId || "No identificado")}</strong>
+          </div>
+        </div>
+
+        <p style="margin-top: 14px;">
+          <strong>Acción sugerida:</strong>
+          crear una negociación prioritaria para coordinar el uso del recurso recomendado.
+        </p>
+
+        <p class="muted">
+          Justificación: el agente cruzó crisis activas, ubicación afectada, estado de empresas y disponibilidad de recursos críticos.
+        </p>
+      `;
+
+      button.classList.remove("hidden");
+    };
+
+    window.createAgentNegotiation = async function () {
+      const output = document.getElementById("agentOutput");
+
+      if (!recommendedNegotiation) {
+        output.innerHTML += `
+          <p style="color:#f87171;">
+            Primero genera una recomendación del agente.
+          </p>
+        `;
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "negotiations"), recommendedNegotiation);
+
+        output.innerHTML += `
+          <p style="color:#86efac;">
+            Negociación recomendada creada correctamente en Firestore.
+          </p>
+        `;
+
+        document.getElementById("createAgentNegotiationButton").classList.add("hidden");
+        recommendedNegotiation = null;
+
+        await loadAllData();
+
+      } catch (error) {
+        console.error(error);
+        output.innerHTML += `
+          <p style="color:#f87171;">
+            Error creando la negociación recomendada.
+          </p>
+        `;
+      }
+    };
 
     window.createNegotiation = async function () {
       const buyerCompanyId = document.getElementById("buyerCompanyId").value;
@@ -286,7 +662,8 @@
         document.getElementById("negotiationResult").innerHTML =
           `<p style="color:#86efac;">Negociación creada correctamente.</p>`;
 
-        loadNegotiations();
+        await loadAllData();
+
       } catch (error) {
         console.error(error);
         document.getElementById("negotiationResult").innerHTML =
@@ -294,11 +671,7 @@
       }
     };
 
-    loadCompanies();
-    loadResources();
-    loadCrisis();
-    loadAlerts();
-    loadNegotiations();
+    loadAllData();
   </script>
 </body>
 </html>

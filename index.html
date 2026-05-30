@@ -7,7 +7,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
@@ -20,8 +20,9 @@
       --text: #f8fafc;
       --muted: #94a3b8;
       --muted-2: #cbd5e1;
-      --accent: #e5e7eb;
       --blue: #3b82f6;
+      --blue-2: #1d4ed8;
+      --cyan: #22c7ee;
       --green: #22c55e;
       --yellow: #f59e0b;
       --red: #ef4444;
@@ -30,6 +31,10 @@
 
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -49,41 +54,70 @@
     aside {
       background: #06080d;
       border-right: 1px solid var(--line);
-      padding: 24px 18px;
+      padding: 22px 16px;
       position: sticky;
       top: 0;
       height: 100vh;
     }
 
     .brand {
+      margin-bottom: 32px;
+    }
+
+    .brand-lockup {
       display: flex;
       align-items: center;
       gap: 12px;
-      margin-bottom: 34px;
+      padding: 8px 4px;
     }
 
-    .brand-mark {
-      width: 36px;
-      height: 36px;
-      border-radius: 8px;
-      background: #f8fafc;
-      color: #020617;
-      display: grid;
-      place-items: center;
-      font-weight: 800;
-      letter-spacing: -0.8px;
+    .brand-icon {
+      width: 56px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(8, 12, 20, 0.98));
+      border: 1px solid rgba(51, 65, 85, 0.9);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 10px 30px rgba(0, 0, 0, 0.28);
+      flex-shrink: 0;
+    }
+
+    .brand-icon-svg {
+      width: 42px;
+      height: 42px;
+      display: block;
+    }
+
+    .brand-copy {
+      min-width: 0;
     }
 
     .brand-name {
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      font-size: 20px;
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      line-height: 1;
+      margin-bottom: 5px;
+      white-space: nowrap;
+    }
+
+    .brand-name-primary {
+      color: #e5e7eb;
+    }
+
+    .brand-name-accent {
+      color: var(--cyan);
     }
 
     .brand-sub {
       color: var(--muted);
       font-size: 12px;
-      margin-top: 2px;
+      font-weight: 600;
+      letter-spacing: 0.2px;
     }
 
     nav {
@@ -99,6 +133,14 @@
       font-size: 14px;
       font-weight: 600;
       border: 1px solid transparent;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background: rgba(15, 19, 27, 0.7);
+      border-color: var(--line);
+      color: var(--text);
     }
 
     .nav-item.active {
@@ -110,8 +152,8 @@
     .sidebar-footer {
       position: absolute;
       bottom: 22px;
-      left: 18px;
-      right: 18px;
+      left: 16px;
+      right: 16px;
       padding: 14px;
       border: 1px solid var(--line);
       border-radius: 10px;
@@ -164,7 +206,7 @@
       font-size: 12px;
       text-transform: uppercase;
       letter-spacing: 1.2px;
-      font-weight: 700;
+      font-weight: 800;
       margin-bottom: 4px;
     }
 
@@ -190,8 +232,64 @@
       font-weight: 600;
     }
 
+    .view-switch {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .view-switch::after {
+      content: "";
+      position: absolute;
+      right: 14px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-right: 2px solid var(--muted);
+      border-bottom: 2px solid var(--muted);
+      transform: translateY(-65%) rotate(45deg);
+      pointer-events: none;
+    }
+
+    .view-select {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 9px 36px 9px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .view-select:hover {
+      border-color: var(--line-2);
+    }
+
+    .view-select:focus {
+      border-color: var(--blue);
+    }
+
+    .view-select option {
+      background: #0b111b;
+      color: var(--text);
+    }
+
     .content {
       padding: 28px 32px 42px;
+    }
+
+    .overview,
+    .grid-4,
+    .decision-panel,
+    .panel {
+      scroll-margin-top: 96px;
     }
 
     .overview {
@@ -632,6 +730,10 @@
       .hero-title {
         font-size: 26px;
       }
+
+      .view-select {
+        max-width: 180px;
+      }
     }
   </style>
 </head>
@@ -640,20 +742,40 @@
   <div class="app-shell">
     <aside>
       <div class="brand">
-        <div class="brand-mark">N</div>
-        <div>
-          <div class="brand-name">NexSync</div>
-          <div class="brand-sub">Operations Console</div>
+        <div class="brand-lockup">
+          <div class="brand-icon">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" class="brand-icon-svg">
+              <circle cx="32" cy="8" r="4.5" fill="#1D4ED8"/>
+              <circle cx="11" cy="20" r="4.5" fill="#1D4ED8"/>
+              <circle cx="11" cy="44" r="4.5" fill="#1D4ED8"/>
+              <circle cx="32" cy="56" r="4.5" fill="#1D4ED8"/>
+              <circle cx="53" cy="44" r="4.5" fill="#1D4ED8"/>
+              <circle cx="53" cy="20" r="4.5" fill="#1D4ED8"/>
+              <path d="M32 8L11 20V44L32 56L53 44V20L32 8Z" stroke="#1D4ED8" stroke-width="3.5" stroke-linejoin="round"/>
+              <circle cx="32" cy="32" r="4.5" fill="#06B6D4"/>
+              <path d="M16 23L27.5 29" stroke="#06B6D4" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M48 23L36.5 29" stroke="#06B6D4" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M16 41L27.5 35" stroke="#06B6D4" stroke-width="3.5" stroke-linecap="round"/>
+              <path d="M48 41L36.5 35" stroke="#06B6D4" stroke-width="3.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+
+          <div class="brand-copy">
+            <div class="brand-name">
+              <span class="brand-name-primary">Nex</span><span class="brand-name-accent">Sync</span>
+            </div>
+            <div class="brand-sub">Operations Console</div>
+          </div>
         </div>
       </div>
 
       <nav>
-        <div class="nav-item active">Operational Overview</div>
-        <div class="nav-item">Critical Resources</div>
-        <div class="nav-item">Risk Events</div>
-        <div class="nav-item">Decision Engine</div>
-        <div class="nav-item">Coordination Flow</div>
-        <div class="nav-item">Negotiations</div>
+        <div class="nav-item active" data-target="overviewSection">Operational Overview</div>
+        <div class="nav-item" data-target="resourcesSection">Critical Resources</div>
+        <div class="nav-item" data-target="riskEventsSection">Risk Events</div>
+        <div class="nav-item" data-target="decisionEngineSection">Decision Engine</div>
+        <div class="nav-item" data-target="coordinationFlowSection">Coordination Flow</div>
+        <div class="nav-item" data-target="negotiationsSection">Negotiations</div>
       </nav>
 
       <div class="sidebar-footer">
@@ -673,12 +795,22 @@
         </div>
 
         <div class="topbar-right">
+          <div class="view-switch">
+            <select id="viewSelect" class="view-select" aria-label="Seleccionar vista de organización">
+              <option value="global">Vista: Consorcio Global</option>
+              <option value="empresa_demo_1">Vista: AgroNorte</option>
+              <option value="empresa_demo_2">Vista: EnergiaPiraí</option>
+              <option value="empresa_demo_3">Vista: TransporteMontero</option>
+              <option value="empresa_demo_4">Vista: FrigoSantaCruz</option>
+            </select>
+          </div>
+
           <div class="pill">MVP Live</div>
         </div>
       </header>
 
       <section class="content">
-        <section class="overview">
+        <section class="overview" id="overviewSection">
           <div class="hero-card">
             <div>
               <div class="eyebrow">Operational resilience platform</div>
@@ -755,7 +887,7 @@
         </section>
 
         <section class="grid-4">
-          <div class="panel">
+          <div class="panel" id="companiesSection">
             <div class="panel-header">
               <h2>Companies</h2>
               <span class="collection">companies</span>
@@ -763,7 +895,7 @@
             <div id="companiesList">Loading companies...</div>
           </div>
 
-          <div class="panel">
+          <div class="panel" id="resourcesSection">
             <div class="panel-header">
               <h2>Critical Resources</h2>
               <span class="collection">resources</span>
@@ -771,7 +903,7 @@
             <div id="resourcesList">Loading resources...</div>
           </div>
 
-          <div class="panel">
+          <div class="panel" id="riskEventsSection">
             <div class="panel-header">
               <h2>Risk Events</h2>
               <span class="collection">crisis_events</span>
@@ -779,7 +911,7 @@
             <div id="crisisList">Loading risk events...</div>
           </div>
 
-          <div class="panel">
+          <div class="panel" id="alertsSection">
             <div class="panel-header">
               <h2>Alerts</h2>
               <span class="collection">alerts</span>
@@ -788,7 +920,7 @@
           </div>
         </section>
 
-        <section class="panel decision-panel">
+        <section class="panel decision-panel" id="decisionEngineSection">
           <div class="panel-header">
             <h2>Decision Engine</h2>
             <span class="collection">recommendation layer</span>
@@ -818,7 +950,7 @@
           </div>
         </section>
 
-        <section class="panel decision-panel">
+        <section class="panel decision-panel" id="coordinationFlowSection">
           <div class="panel-header">
             <h2>Coordination Workflow</h2>
             <span class="collection">multi-role validation</span>
@@ -868,7 +1000,7 @@
           <div id="negotiationResult"></div>
         </section>
 
-        <section class="panel">
+        <section class="panel" id="negotiationsSection">
           <div class="panel-header">
             <h2>Negotiation History</h2>
             <span class="collection">decision log</span>
@@ -910,14 +1042,127 @@
       negotiations: []
     };
 
+    let currentView = "global";
     let recommendedNegotiation = null;
     let multiAgentNegotiation = null;
+
+    const VIEW_CONFIG = {
+      global: {
+        companyId: null,
+        label: "Consorcio Global",
+        agentText: "Global operating view active. The system is monitoring all connected companies, resources, risk events and coordination decisions across the Santa Cruz operating network."
+      },
+      empresa_demo_1: {
+        companyId: "empresa_demo_1",
+        label: "AgroNorte",
+        agentText: "Company view active for AgroNorte. This user can see its own company profile, owned resources, related risk events, alerts and negotiations where it participates."
+      },
+      empresa_demo_2: {
+        companyId: "empresa_demo_2",
+        label: "EnergiaPiraí",
+        agentText: "Company view active for EnergiaPiraí. This user can see its own operating resources and coordination requests related to its available energy capacity."
+      },
+      empresa_demo_3: {
+        companyId: "empresa_demo_3",
+        label: "TransporteMontero",
+        agentText: "Company view active for TransporteMontero. This user can see its logistics resources and negotiations where transport capacity is involved."
+      },
+      empresa_demo_4: {
+        companyId: "empresa_demo_4",
+        label: "FrigoSantaCruz",
+        agentText: "Company view active for FrigoSantaCruz. This user can see its operational risk exposure, related alerts and resource negotiations where it participates."
+      }
+    };
 
     function normalizeText(value) {
       return String(value || "")
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "")
         .toLowerCase();
+    }
+
+    function getActiveCompanyId() {
+      return VIEW_CONFIG[currentView]?.companyId || null;
+    }
+
+    function getActiveCompany() {
+      const companyId = getActiveCompanyId();
+      if (!companyId) return null;
+      return cache.companies.find((company) => company._id === companyId) || null;
+    }
+
+    function isGlobalView() {
+      return !getActiveCompanyId();
+    }
+
+    function getVisibleCompanies() {
+      const companyId = getActiveCompanyId();
+      if (!companyId) return cache.companies;
+      return cache.companies.filter((company) => company._id === companyId);
+    }
+
+    function getVisibleResources() {
+      const companyId = getActiveCompanyId();
+      if (!companyId) return cache.resources;
+      return cache.resources.filter((resource) => resource.ownerCompanyId === companyId);
+    }
+
+    function getVisibleNegotiations() {
+      const companyId = getActiveCompanyId();
+      if (!companyId) return cache.negotiations;
+
+      const ownedResourceIds = new Set(
+        cache.resources
+          .filter((resource) => resource.ownerCompanyId === companyId)
+          .map((resource) => resource._id)
+      );
+
+      return cache.negotiations.filter((negotiation) =>
+        negotiation.buyerCompanyId === companyId ||
+        ownedResourceIds.has(negotiation.resourceId)
+      );
+    }
+
+    function getVisibleCrisisEvents() {
+      if (isGlobalView()) return cache.crisis_events;
+
+      const activeCompany = getActiveCompany();
+      if (!activeCompany) return [];
+
+      const companyName = normalizeText(activeCompany.name);
+      const companyLocation = normalizeText(activeCompany.location);
+      const companySector = normalizeText(activeCompany.sector);
+
+      return cache.crisis_events.filter((event) => {
+        const text = normalizeText(`${event.type} ${event.description} ${event.location}`);
+
+        return (
+          text.includes(companyName) ||
+          text.includes(companyLocation) ||
+          text.includes(companySector)
+        );
+      });
+    }
+
+    function getVisibleAlerts() {
+      if (isGlobalView()) return cache.alerts;
+
+      const activeCompany = getActiveCompany();
+      if (!activeCompany) return [];
+
+      const companyName = normalizeText(activeCompany.name);
+      const companyLocation = normalizeText(activeCompany.location);
+      const companySector = normalizeText(activeCompany.sector);
+
+      return cache.alerts.filter((alert) => {
+        const text = normalizeText(`${alert.title} ${alert.message} ${alert.level}`);
+
+        return (
+          text.includes(companyName) ||
+          text.includes(companyLocation) ||
+          text.includes(companySector)
+        );
+      });
     }
 
     async function getCollectionData(collectionName) {
@@ -932,7 +1177,7 @@
       const container = document.getElementById(elementId);
 
       if (!items || items.length === 0) {
-        container.innerHTML = `<p class="muted">No data in <b>${collectionName}</b>.</p>`;
+        container.innerHTML = `<p class="muted">No data in <b>${collectionName}</b> for this view.</p>`;
         return;
       }
 
@@ -970,6 +1215,7 @@
         renderCrisis();
         renderAlerts();
         renderNegotiations();
+        applyAgentBrainText();
 
       } catch (error) {
         console.error(error);
@@ -982,12 +1228,17 @@
     }
 
     function updateCommandCenter() {
-      document.getElementById("kpiCompanies").textContent = cache.companies.length;
-      document.getElementById("kpiResources").textContent = cache.resources.length;
-      document.getElementById("kpiCrises").textContent = cache.crisis_events.filter((crisis) => crisis.active !== false).length;
-      document.getElementById("kpiNegotiations").textContent = cache.negotiations.length;
+      const visibleCompanies = getVisibleCompanies();
+      const visibleResources = getVisibleResources();
+      const visibleCrisisEvents = getVisibleCrisisEvents();
+      const visibleNegotiations = getVisibleNegotiations();
 
-      const activeCrises = cache.crisis_events.filter((crisis) => crisis.active !== false);
+      document.getElementById("kpiCompanies").textContent = visibleCompanies.length;
+      document.getElementById("kpiResources").textContent = visibleResources.length;
+      document.getElementById("kpiCrises").textContent = visibleCrisisEvents.filter((crisis) => crisis.active !== false).length;
+      document.getElementById("kpiNegotiations").textContent = visibleNegotiations.length;
+
+      const activeCrises = visibleCrisisEvents.filter((crisis) => crisis.active !== false);
       const priority =
         activeCrises.find((crisis) => normalizeText(crisis.severity).includes("critica")) ||
         activeCrises.find((crisis) => normalizeText(crisis.severity).includes("alta")) ||
@@ -995,7 +1246,9 @@
 
       if (!priority) {
         document.getElementById("priorityCrisisTitle").textContent = "No active risk event";
-        document.getElementById("priorityCrisisText").textContent = "No active operational disruptions are currently registered.";
+        document.getElementById("priorityCrisisText").textContent = isGlobalView()
+          ? "No active operational disruptions are currently registered."
+          : "No active operational disruptions are visible for this organization.";
         return;
       }
 
@@ -1005,7 +1258,7 @@
     }
 
     function renderCompanies() {
-      renderList("companiesList", cache.companies, "companies", (data) => {
+      renderList("companiesList", getVisibleCompanies(), "companies", (data) => {
         const status = normalizeText(data.status);
         const badgeClass = status.includes("riesgo") || status.includes("critica") ? "danger" : "success";
 
@@ -1021,7 +1274,7 @@
     }
 
     function renderResources() {
-      renderList("resourcesList", cache.resources, "resources", (data) => `
+      renderList("resourcesList", getVisibleResources(), "resources", (data) => `
         <div class="item">
           <strong>${data.name || data._id}</strong>
           <p>Type: ${data.type || "Not specified"}</p>
@@ -1034,7 +1287,7 @@
     }
 
     function renderCrisis() {
-      renderList("crisisList", cache.crisis_events, "crisis_events", (data) => {
+      renderList("crisisList", getVisibleCrisisEvents(), "crisis_events", (data) => {
         const severity = normalizeText(data.severity);
         const badgeClass = severity.includes("critica") ? "danger" : "warning";
 
@@ -1050,7 +1303,7 @@
     }
 
     function renderAlerts() {
-      renderList("alertsList", cache.alerts, "alerts", (data) => `
+      renderList("alertsList", getVisibleAlerts(), "alerts", (data) => `
         <div class="item">
           <strong>${data.title || data._id}</strong>
           <p>${data.message || "No message"}</p>
@@ -1060,7 +1313,7 @@
     }
 
     function renderNegotiations() {
-      renderList("negotiationsList", cache.negotiations, "negotiations", (data) => {
+      renderList("negotiationsList", getVisibleNegotiations(), "negotiations", (data) => {
         const company = findCompanyById(data.buyerCompanyId);
         const resource = findResourceById(data.resourceId);
 
@@ -1107,6 +1360,12 @@
     }
 
     function findAffectedCompany(crisis) {
+      const selectedCompany = getActiveCompany();
+
+      if (selectedCompany) {
+        return selectedCompany;
+      }
+
       const crisisLocation = normalizeText(crisis.location);
       const crisisDescription = normalizeText(crisis.description);
 
@@ -1144,20 +1403,6 @@
       });
 
       if (riskCompany) return riskCompany;
-
-      const locationMatch = cache.companies.find((company) => {
-        const companyLocation = normalizeText(company.location);
-
-        return (
-          companyLocation &&
-          (
-            crisisLocation.includes(companyLocation) ||
-            crisisDescription.includes(companyLocation)
-          )
-        );
-      });
-
-      if (locationMatch) return locationMatch;
 
       return cache.companies[0] || null;
     }
@@ -1202,11 +1447,11 @@
     }
 
     function buildOperationalRecommendation() {
-      const activeCrises = cache.crisis_events.filter((crisis) => crisis.active !== false);
+      const activeCrises = getVisibleCrisisEvents().filter((crisis) => crisis.active !== false);
 
       if (cache.companies.length === 0 || cache.resources.length === 0 || activeCrises.length === 0) {
         return {
-          error: "Not enough data. Verify companies, resources and active risk events in Firestore."
+          error: "Not enough visible data. Verify companies, resources and active risk events for this view."
         };
       }
 
@@ -1491,6 +1736,63 @@
       }
     };
 
+    function setupSidebarNavigation() {
+      const navItems = document.querySelectorAll(".nav-item");
+
+      navItems.forEach((item) => {
+        item.addEventListener("click", () => {
+          const targetId = item.getAttribute("data-target");
+          const target = document.getElementById(targetId);
+
+          if (!target) return;
+
+          navItems.forEach((nav) => nav.classList.remove("active"));
+          item.classList.add("active");
+
+          target.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+          });
+        });
+      });
+    }
+
+    function applyAgentBrainText() {
+      const output = document.getElementById("agentOutput");
+      if (!output) return;
+
+      const config = VIEW_CONFIG[currentView] || VIEW_CONFIG.global;
+      output.innerHTML = `<p>${config.agentText}</p>`;
+    }
+
+    function setupViewSwitch() {
+      const select = document.getElementById("viewSelect");
+      if (!select) return;
+
+      select.addEventListener("change", (event) => {
+        currentView = event.target.value;
+
+        recommendedNegotiation = null;
+        multiAgentNegotiation = null;
+
+        document.getElementById("createAgentNegotiationButton").classList.add("hidden");
+        document.getElementById("createMultiAgentNegotiationButton").classList.add("hidden");
+
+        updateCommandCenter();
+        renderCompanies();
+        renderResources();
+        renderCrisis();
+        renderAlerts();
+        renderNegotiations();
+        applyAgentBrainText();
+
+        document.getElementById("multiAgentOutput").innerHTML =
+          "Run the coordination workflow to validate a negotiation between organizations.";
+      });
+    }
+
+    setupSidebarNavigation();
+    setupViewSwitch();
     loadAllData();
   </script>
 </body>

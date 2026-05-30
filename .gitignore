@@ -1,0 +1,6 @@
+config.js
+public/config.js
+serviceAccountKey.json
+*.env
+.env
+node_modules/

@@ -479,5 +479,9 @@ Etapa 6: Firebase Hosting
 Proyecto desarrollado para la Hackathon Build With AI 2026 organizada por GDG Santa Cruz.
 Integrantes:
 * Diego Andrade
-* 
+* Sebastian Aspiazu
+* Salim Suarez
+* Mathias Frias
+* Daniel Roca
+  
 

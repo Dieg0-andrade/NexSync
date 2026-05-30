@@ -84,6 +84,10 @@
       background: #7c3aed;
     }
 
+    .orange {
+      background: #ea580c;
+    }
+
     button {
       background: #2563eb;
       color: white;
@@ -116,6 +120,14 @@
       background: #15803d;
     }
 
+    .orange-button {
+      background: #ea580c;
+    }
+
+    .orange-button:hover {
+      background: #c2410c;
+    }
+
     input, select {
       width: 100%;
       padding: 10px;
@@ -134,6 +146,11 @@
     .agent-panel {
       background: linear-gradient(135deg, #111827, #312e81);
       border: 1px solid #6366f1;
+    }
+
+    .multiagent-panel {
+      background: linear-gradient(135deg, #111827, #431407);
+      border: 1px solid #f97316;
     }
 
     .agent-result {
@@ -166,6 +183,24 @@
 
     .agent-metric strong {
       color: #ffffff;
+    }
+
+    .timeline {
+      margin-top: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .timeline-step {
+      background: #111827;
+      border: 1px solid #374151;
+      border-left: 5px solid #f97316;
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .timeline-step strong {
+      color: #fdba74;
     }
 
     .muted {
@@ -226,6 +261,25 @@
       </div>
     </section>
 
+    <section class="card full multiagent-panel">
+      <h2>Simulación Multiagente</h2>
+      <p class="muted">
+        Simula cómo varios agentes empresariales coordinan una decisión ante una crisis crítica.
+      </p>
+
+      <button class="orange-button" onclick="runMultiAgentSimulation()">
+        Ejecutar simulación multiagente
+      </button>
+
+      <button id="createMultiAgentNegotiationButton" class="green-button hidden" onclick="createMultiAgentNegotiation()">
+        Crear negociación validada por agentes
+      </button>
+
+      <div id="multiAgentOutput" class="agent-result">
+        Presiona el botón para simular la coordinación entre agentes.
+      </div>
+    </section>
+
     <section class="card full">
       <h2>Simular negociación de recurso</h2>
 
@@ -280,6 +334,7 @@
     };
 
     let recommendedNegotiation = null;
+    let multiAgentNegotiation = null;
 
     function normalizeText(value) {
       return String(value || "")
@@ -432,78 +487,84 @@
     }
 
     function findAffectedCompany(crisis) {
-  const crisisLocation = normalizeText(crisis.location);
-  const crisisDescription = normalizeText(crisis.description);
+      const crisisLocation = normalizeText(crisis.location);
+      const crisisDescription = normalizeText(crisis.description);
 
-  // 1. Primero busca empresas mencionadas directamente en la descripción de la crisis
-  const mentionedCompany = cache.companies.find((company) => {
-    const companyName = normalizeText(company.name);
-    return companyName && crisisDescription.includes(companyName);
-  });
+      const mentionedCompany = cache.companies.find((company) => {
+        const companyName = normalizeText(company.name);
+        return companyName && crisisDescription.includes(companyName);
+      });
 
-  if (mentionedCompany) return mentionedCompany;
+      if (mentionedCompany) return mentionedCompany;
 
-  // 2. Luego prioriza empresas en riesgo dentro de la zona afectada
-  const riskCompanyInLocation = cache.companies.find((company) => {
-    const companyLocation = normalizeText(company.location);
-    const companyStatus = normalizeText(company.status);
+      const riskCompanyInLocation = cache.companies.find((company) => {
+        const companyLocation = normalizeText(company.location);
+        const companyStatus = normalizeText(company.status);
 
-    const isSameLocation =
-      companyLocation &&
-      (
-        crisisLocation.includes(companyLocation) ||
-        companyLocation.includes(crisisLocation)
-      );
+        const isSameLocation =
+          companyLocation &&
+          (
+            crisisLocation.includes(companyLocation) ||
+            companyLocation.includes(crisisLocation)
+          );
 
-    const isAtRisk =
-      companyStatus.includes("riesgo") ||
-      companyStatus.includes("critica") ||
-      companyStatus.includes("crisis");
+        const isAtRisk =
+          companyStatus.includes("riesgo") ||
+          companyStatus.includes("critica") ||
+          companyStatus.includes("crisis");
 
-    return isSameLocation && isAtRisk;
-  });
+        return isSameLocation && isAtRisk;
+      });
 
-  if (riskCompanyInLocation) return riskCompanyInLocation;
+      if (riskCompanyInLocation) return riskCompanyInLocation;
 
-  // 3. Luego busca cualquier empresa en riesgo
-  const riskCompany = cache.companies.find((company) => {
-    const status = normalizeText(company.status);
-    return status.includes("riesgo") || status.includes("critica") || status.includes("crisis");
-  });
+      const riskCompany = cache.companies.find((company) => {
+        const status = normalizeText(company.status);
+        return status.includes("riesgo") || status.includes("critica") || status.includes("crisis");
+      });
 
-  if (riskCompany) return riskCompany;
+      if (riskCompany) return riskCompany;
 
-  // 4. Finalmente busca por ubicación
-  const locationMatch = cache.companies.find((company) => {
-    const companyLocation = normalizeText(company.location);
+      const locationMatch = cache.companies.find((company) => {
+        const companyLocation = normalizeText(company.location);
 
-    return (
-      companyLocation &&
-      (
-        crisisLocation.includes(companyLocation) ||
-        crisisDescription.includes(companyLocation)
-      )
-    );
-  });
+        return (
+          companyLocation &&
+          (
+            crisisLocation.includes(companyLocation) ||
+            crisisDescription.includes(companyLocation)
+          )
+        );
+      });
 
-  if (locationMatch) return locationMatch;
+      if (locationMatch) return locationMatch;
 
-  return cache.companies[0] || null;
-}
+      return cache.companies[0] || null;
+    }
 
-    function findRecommendedResource(crisis) {
+    function findRecommendedResource(crisis, affectedCompany = null) {
       const keywords = getResourceKeywordsForCrisis(crisis);
 
       const resource = cache.resources.find((resource) => {
         const text = normalizeText(`${resource.name} ${resource.type} ${resource.unit}`);
         const isAvailable = resource.available !== false;
+        const isNotOwnedByAffectedCompany = affectedCompany
+          ? resource.ownerCompanyId !== affectedCompany._id
+          : true;
 
-        return isAvailable && keywords.some((keyword) => text.includes(keyword));
+        return isAvailable && isNotOwnedByAffectedCompany && keywords.some((keyword) => text.includes(keyword));
       });
 
       if (resource) return resource;
 
-      return cache.resources.find((resource) => resource.available !== false) || null;
+      return cache.resources.find((resource) => {
+        const isAvailable = resource.available !== false;
+        const isNotOwnedByAffectedCompany = affectedCompany
+          ? resource.ownerCompanyId !== affectedCompany._id
+          : true;
+
+        return isAvailable && isNotOwnedByAffectedCompany;
+      }) || null;
     }
 
     function getPriority(crisis) {
@@ -520,22 +581,13 @@
       return "media";
     }
 
-    window.generateAgentRecommendation = function () {
-      const output = document.getElementById("agentOutput");
-      const button = document.getElementById("createAgentNegotiationButton");
-
-      recommendedNegotiation = null;
-      button.classList.add("hidden");
-
+    function buildOperationalRecommendation() {
       const activeCrises = cache.crisis_events.filter((crisis) => crisis.active !== false);
 
       if (cache.companies.length === 0 || cache.resources.length === 0 || activeCrises.length === 0) {
-        output.innerHTML = `
-          <p style="color:#f87171;">
-            El agente no tiene datos suficientes. Verifica que existan empresas, recursos y crisis activas en Firestore.
-          </p>
-        `;
-        return;
+        return {
+          error: "No hay datos suficientes. Verifica que existan empresas, recursos y crisis activas en Firestore."
+        };
       }
 
       const selectedCrisis =
@@ -544,19 +596,47 @@
         activeCrises[0];
 
       const affectedCompany = findAffectedCompany(selectedCrisis);
-      const recommendedResource = findRecommendedResource(selectedCrisis);
+      const recommendedResource = findRecommendedResource(selectedCrisis, affectedCompany);
 
       if (!affectedCompany || !recommendedResource) {
-        output.innerHTML = `
-          <p style="color:#f87171;">
-            El agente detectó una crisis, pero no encontró una empresa afectada o recurso disponible para recomendar.
-          </p>
-        `;
-        return;
+        return {
+          error: "El sistema detectó una crisis, pero no encontró empresa afectada o recurso disponible."
+        };
       }
 
       const providerCompany = findCompanyById(recommendedResource.ownerCompanyId);
       const priority = getPriority(selectedCrisis);
+
+      return {
+        selectedCrisis,
+        affectedCompany,
+        recommendedResource,
+        providerCompany,
+        priority
+      };
+    }
+
+    window.generateAgentRecommendation = function () {
+      const output = document.getElementById("agentOutput");
+      const button = document.getElementById("createAgentNegotiationButton");
+
+      recommendedNegotiation = null;
+      button.classList.add("hidden");
+
+      const recommendation = buildOperationalRecommendation();
+
+      if (recommendation.error) {
+        output.innerHTML = `<p style="color:#f87171;">${recommendation.error}</p>`;
+        return;
+      }
+
+      const {
+        selectedCrisis,
+        affectedCompany,
+        recommendedResource,
+        providerCompany,
+        priority
+      } = recommendation;
 
       recommendedNegotiation = {
         buyerCompanyId: affectedCompany._id,
@@ -613,11 +693,7 @@
       const output = document.getElementById("agentOutput");
 
       if (!recommendedNegotiation) {
-        output.innerHTML += `
-          <p style="color:#f87171;">
-            Primero genera una recomendación del agente.
-          </p>
-        `;
+        output.innerHTML += `<p style="color:#f87171;">Primero genera una recomendación del agente.</p>`;
         return;
       }
 
@@ -637,11 +713,140 @@
 
       } catch (error) {
         console.error(error);
+        output.innerHTML += `<p style="color:#f87171;">Error creando la negociación recomendada.</p>`;
+      }
+    };
+
+    window.runMultiAgentSimulation = function () {
+      const output = document.getElementById("multiAgentOutput");
+      const button = document.getElementById("createMultiAgentNegotiationButton");
+
+      multiAgentNegotiation = null;
+      button.classList.add("hidden");
+
+      const recommendation = buildOperationalRecommendation();
+
+      if (recommendation.error) {
+        output.innerHTML = `<p style="color:#f87171;">${recommendation.error}</p>`;
+        return;
+      }
+
+      const {
+        selectedCrisis,
+        affectedCompany,
+        recommendedResource,
+        providerCompany,
+        priority
+      } = recommendation;
+
+      multiAgentNegotiation = {
+        buyerCompanyId: affectedCompany._id,
+        resourceId: recommendedResource._id,
+        offer: `Negociación validada por simulación multiagente: ${affectedCompany.name || affectedCompany._id} solicita ${recommendedResource.name || recommendedResource._id} ante ${selectedCrisis.type || "crisis activa"} en ${selectedCrisis.location || "zona afectada"}`,
+        status: "validada_multiagente",
+        agentFlow: [
+          "agente_empresa_afectada",
+          "agente_proveedor",
+          "agente_riesgo",
+          "agente_coordinador"
+        ],
+        createdAt: serverTimestamp()
+      };
+
+      output.innerHTML = `
+        <h3>Coordinación multiagente ejecutada</h3>
+
+        <div class="timeline">
+          <div class="timeline-step">
+            <strong>1. Agente de empresa afectada</strong>
+            <p>
+              ${affectedCompany.name || affectedCompany._id} reporta riesgo operativo por:
+              "${selectedCrisis.description || "crisis activa"}".
+            </p>
+          </div>
+
+          <div class="timeline-step">
+            <strong>2. Agente de proveedor</strong>
+            <p>
+              ${providerCompany ? providerCompany.name : "Proveedor no identificado"} confirma disponibilidad de:
+              ${recommendedResource.name || recommendedResource._id}.
+            </p>
+          </div>
+
+          <div class="timeline-step">
+            <strong>3. Agente de riesgo local</strong>
+            <p>
+              Clasifica la situación con prioridad ${priority} por impacto en ${selectedCrisis.location || "zona afectada"}.
+            </p>
+          </div>
+
+          <div class="timeline-step">
+            <strong>4. Agente coordinador NexSync</strong>
+            <p>
+              Recomienda aprobar una negociación prioritaria entre
+              ${affectedCompany.name || affectedCompany._id}
+              y
+              ${providerCompany ? providerCompany.name : (recommendedResource.ownerCompanyId || "proveedor sugerido")}.
+            </p>
+          </div>
+        </div>
+
+        <div class="agent-grid">
+          <div class="agent-metric">
+            <small>Empresa solicitante</small>
+            <strong>${affectedCompany.name || affectedCompany._id}</strong>
+          </div>
+
+          <div class="agent-metric">
+            <small>Recurso</small>
+            <strong>${recommendedResource.name || recommendedResource._id}</strong>
+          </div>
+
+          <div class="agent-metric">
+            <small>Proveedor</small>
+            <strong>${providerCompany ? providerCompany.name : (recommendedResource.ownerCompanyId || "No identificado")}</strong>
+          </div>
+
+          <div class="agent-metric">
+            <small>Resultado</small>
+            <strong>Negociación validada</strong>
+          </div>
+        </div>
+
+        <p class="muted">
+          Esta simulación representa la coordinación entre agentes autónomos con roles separados:
+          solicitante, proveedor, evaluador de riesgo y coordinador operativo.
+        </p>
+      `;
+
+      button.classList.remove("hidden");
+    };
+
+    window.createMultiAgentNegotiation = async function () {
+      const output = document.getElementById("multiAgentOutput");
+
+      if (!multiAgentNegotiation) {
+        output.innerHTML += `<p style="color:#f87171;">Primero ejecuta la simulación multiagente.</p>`;
+        return;
+      }
+
+      try {
+        await addDoc(collection(db, "negotiations"), multiAgentNegotiation);
+
         output.innerHTML += `
-          <p style="color:#f87171;">
-            Error creando la negociación recomendada.
+          <p style="color:#86efac;">
+            Negociación validada por agentes creada correctamente en Firestore.
           </p>
         `;
+
+        document.getElementById("createMultiAgentNegotiationButton").classList.add("hidden");
+        multiAgentNegotiation = null;
+
+        await loadAllData();
+
+      } catch (error) {
+        console.error(error);
+        output.innerHTML += `<p style="color:#f87171;">Error creando la negociación multiagente.</p>`;
       }
     };
 
